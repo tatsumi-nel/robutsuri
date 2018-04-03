@@ -10,8 +10,8 @@ class CrossSection:
     def set_d(self, val):
         self.d = val
 
-    def set_sigtr(self, val):
-        self.sigtr = val
+    def set_sigr(self, val):
+        self.sigr = val
 
     def set_nusigf(self, val):
         self.nusigfs = val

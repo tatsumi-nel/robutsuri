@@ -7,11 +7,17 @@ class CrossSection:
         self.sigf   = 0.0
         # self.xi     = 1.0
 
+    def set(self, vec):
+        self.d      = vec[0]
+        self.sigr   = vec[1]
+        self.nusigf = vec[2]
+        self.sigf   = vec[3]
+
     def set_d(self, val):
         self.d = val
 
-    def set_sigtr(self, val):
-        self.sigtr = val
+    def set_sigr(self, val):
+        self.sigr = val
 
     def set_nusigf(self, val):
         self.nusigf = val
@@ -22,14 +28,43 @@ class CrossSection:
     def get_d(self):
         return self.d
     
-    def get_sigtr(self):
-        return self.sigtr
+    def get_sigr(self):
+        return self.sigr
 
     def get_nusigf(self):
         return self.nusigf
     
     def get_sigf(self):
         return self.sigf
+
+    def get(self):
+        dat = [self.d, self.sigr, self.nusigf, self.sigf]
+        return dat
+
+    def __add__(self, other):
+        self.d = self.d + other.d
+        self.sigr = self.sigr + other.sigr
+        self.nusigf = self.nusigf + other.nusigf
+        self.sigf = self.sigf + other.sigf
+        return self
+
+    def __sub__(self, other):
+        self.d = self.d - other.d
+        self.sigr = self.sigr - other.sigr
+        self.nusigf = self.nusigf - other.nusigf
+        self.sigf = self.sigf - other.sigf
+        return self
+
+    def __mul__(self, val):
+        xs = CrossSection()
+        xs.d = self.d * val
+        xs.sigr = self.sigr * val
+        xs.nusigf = self.nusigf * val
+        xs.sigf = self.sigf * val
+        return xs
+
+    def __rmul__(self, val):
+        return self.__mul__(val)
 
     def debug(self):
         print("--- XS ---------------")

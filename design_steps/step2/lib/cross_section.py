@@ -23,8 +23,8 @@ class CrossSection:
     def get_d(self):
         return self.d
     
-    def get_sigtr(self):
-        return self.sigtr
+    def get_sigr(self):
+        return self.sigr
 
     def get_nusigf(self):
         return self.nusigf
