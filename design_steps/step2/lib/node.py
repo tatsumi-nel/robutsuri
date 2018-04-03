@@ -1,4 +1,4 @@
-from cross_section import CrossSection
+from .cross_section import CrossSection
 
 class Node:
     def __init__(self):

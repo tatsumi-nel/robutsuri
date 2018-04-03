@@ -1,6 +1,7 @@
 import unittest
 
-import lib
+from lib.node import Node
+from lib.cross_section import CrossSection
 
 class NodeTest(unittest.TestCase):
 
