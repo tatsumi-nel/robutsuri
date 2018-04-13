@@ -1,13 +1,12 @@
-from .cross_section import CrossSection
-
 class Node:
     def __init__(self):
-        self.j = [0.0, 0.0]
-        self.flux = 0.0
-        self.xs = CrossSection()
+        self.jp = [0.0, 0.0]
+        self.jm = [0.0, 0.0]
+        self.flux = [0.0, 0.0]
+        self.xs = None
         
-    def set_flux(self, f):
-        self.flux = f
+    def set_flux(self, kg, val):
+        self.flux[kg] = val
 
     def set_xs(self, xs):
         self.xs = xs
@@ -16,13 +15,13 @@ class Node:
         pass
 
     def debug(self):
-        print("--- Node ---------")
-        print("flux = ", self.flux)
-        print("j_x- = ", self.j[0])
-        print("j_x+ = ", self.j[1])
-        print("------------------")
+        print("-"*3 + " Node " + "-"*40)
+        print("kg\tjp\tjm\tflux")
+        for kg in range(0,2):
+            print(kg, self.jp[kg], self.jm[kg], self.flux[kg], sep='\t', end='\n')
         self.xs.debug()
-    
+        print("-"*50)
+
 
 if __name__ == '__main__':
     node = Node()
