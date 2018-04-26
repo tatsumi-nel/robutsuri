@@ -1,10 +1,12 @@
+import numpy as np
+
 class CrossSection:
     def __init__(self):
-        self.d      = [0.0, 0.0]
-        self.siga   = [0.0, 0.0]
-        self.sigs   = [0.0, 0.0]
-        self.nusigf = [0.0, 0.0]
-        self.xi     = [0.0, 0.0]
+        self.d      = np.zeros(2)
+        self.siga   = np.zeros(2)
+        self.sigs   = np.zeros(2)
+        self.nusigf = np.zeros(2)
+        self.xi     = np.zeros(2)
 
     def set_d(self, kg, val):
         self.d[kg] = val

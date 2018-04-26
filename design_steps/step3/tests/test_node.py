@@ -53,3 +53,7 @@ class NodeTest(unittest.TestCase):
         
         xs4 = xs2 + xs2
         self.assertEqual(xs4, xs3)
+
+if __name__ == '__main__':
+    unittest.main()
+    

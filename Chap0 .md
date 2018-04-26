@@ -1,8 +1,3 @@
-# Robutsuri Programming DOJO
-<div style="text-align: right;">
-Written by Masahiro Tatsumi<br>
-</div>
-
 ## プロローグ
 今回、なぜプログラミングがテーマの一つになったのか･･･。そして、何故、講師を引き受けることになってしまったのか･･･。
 

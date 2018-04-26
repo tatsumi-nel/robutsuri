@@ -1,10 +1,12 @@
+import numpy as np
+
 class CrossSection:
     def __init__(self):
-        self.d      = [0.0, 0.0]
-        self.siga   = [0.0, 0.0]
-        self.sigs   = [0.0, 0.0]
-        self.nusigf = [0.0, 0.0]
-        self.xi     = [0.0, 0.0]
+        self.d      = np.zeros(2)
+        self.siga   = np.zeros(2)
+        self.sigs   = np.zeros(2)
+        self.nusigf = np.zeros(2)
+        self.xi     = np.zeros(2)
 
     def set_d(self, kg, val):
         self.d[kg] = val
@@ -37,9 +39,11 @@ class CrossSection:
         return self.xi[kg]
 
     def __eq__(self, other):
-        if (self.d == other.d and self.siga == other.siga and
-            self.sigs == other.sigs and self.nusigf == other.nusigf and
-            self.xi == other.xi):
+        if (np.allclose(self.d, other.d) and
+            np.allclose(self.siga, other.siga) and
+            np.allclose(self.sigs, other.sigs) and
+            np.allclose(self.nusigf, other.nusigf) and
+            np.allclose(self.xi, other.xi) ):
             return True
         else:
             return False

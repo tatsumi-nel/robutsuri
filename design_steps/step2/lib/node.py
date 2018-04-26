@@ -1,8 +1,10 @@
+import numpy as np
+
 class Node:
     def __init__(self):
-        self.jp = [0.0, 0.0]
-        self.jm = [0.0, 0.0]
-        self.flux = [0.0, 0.0]
+        self.jp = np.zeros(2)
+        self.jm = np.zeros(2)
+        self.flux = np.zeros(2)
         self.xs = None
         
     def set_flux(self, kg, val):

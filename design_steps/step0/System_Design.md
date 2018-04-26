@@ -21,7 +21,9 @@
     - 断面積 (CrossSection)
     - 中性子束 (Flux)
     - 中性子流 (Current)
-    - 計算ノード (Node)
+    - ノード (Node)
+        - 計算ノード (CNode)
+        - 境界ノード (BNode)
     - 計算体系 (Container)
 
 - View (今回は実装しない)
