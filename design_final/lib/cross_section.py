@@ -1,92 +1,95 @@
 import numpy as np
+import copy
+
+# 大域変数
+N_REACT = 3  # D, Siga, nuSigf
+DIF    = 0
+SIGA   = 1
+NUSIGF = 2
+
 
 class CrossSection:
+    """
+    断面積クラス (1群)
+    """
 
-    def __init__(self, val):
-        self.d      = np.zeros(2)
-        self.siga   = np.zeros(2)
-        self.nusigf = np.zeros(2)
-        self.xi     = np.zeros(2)
-        self.sigs   = np.zeros((2,2))
+    def __init__(self, val=None):
+        """
+        コンストラクタ
+        """
+        self.x = np.zeros(N_REACT)
+        if(not (val is None)):
+            self.set(val)
 
-    def set_d(self, kg, val):
-        self.d[kg] = val
+    def set(self, val):
+        if (type(val) == CrossSection):
+            self.x = copy.copy(val.x)
+        else:
+            for k in range(N_REACT):
+                self.x[k] = val[k]
 
-    def set_siga(self, kg, val):
-        self.siga[kg] = val
+    def set_d(self, val):
+        self.x[DIF] = val
 
-    def set_sigs(self, kg, val):
-        self.sigs[kg] = val
+    def set_siga(self, val):
+        self.x[SIGA] = val
 
-    def set_nusigf(self, kg, val):
-        self.nusigf[kg] = val
+    def set_nusigf(self, val):
+        self.x[NUSIGF] = val
 
-    def set_xi(self, kg, val):
-        self.xi[kg] = val
+    def dif(self):
+        return self.x[DIF]
 
-    def get_d(self, kg):
-        return self.d[kg]
+    def siga(self):
+        return self.x[SIGA]
 
-    def get_siga(self, kg):
-        return self.siga[kg]
-
-    def get_sigs(self, kg):
-        return self.sigs[kg]
-
-    def get_nusigf(self, kg):
-        return self.nusigf[kg]
-
-    def get_xi(self, kg):
-        return self.xi[kg]
+    def nusigf(self):
+        return self.x[NUSIGF]
 
     def __eq__(self, other):
-        if (self.d == other.d and self.siga == other.siga and
-            self.sigs == other.sigs and self.nusigf == other.nusigf and
-            self.xi == other.xi):
-            return True
-        else:
-            return False
-
-    def __mul__(self, val):
+        return np.allclose(self.x, other.x)
+            
+    def __mul__(self, factor):
         # ここで val は float であることを前提とする
-        xs = CrossSection()
-        for kg in range(0,2):
-            xs.d[kg] = self.d[kg] * val
-            xs.siga[kg] = self.siga[kg] * val
-            xs.sigs[kg] = self.sigs[kg] * val
-            xs.nusigf[kg] = self.nusigf[kg] * val
-            xs.xi[kg] = self.xi[kg] * val
+        xs = CrossSection(self)
+        xs.x *= factor
         return xs
 
+    def __rmul__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= factor
+        return xs
+
+    def __truediv__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= (1.0/factor)
+        return xs
+
+    def __neg__(self):
+        return self * (-1.0)
+
     def __add__(self, other):
-        xs = CrossSection()
-        for kg in range(0,2):
-            xs.d[kg] = self.d[kg] + other.d[kg]
-            xs.siga[kg] = self.siga[kg] + other.siga[kg]
-            xs.sigs[kg] = self.sigs[kg] + other.sigs[kg]
-            xs.nusigf[kg] = self.nusigf[kg] + other.nusigf[kg]
-            xs.xi[kg] = self.xi[kg] + other.xi[kg]
+        xs = CrossSection(self)
+        xs.x += other.x
+        return xs
+    
+    def __sub__(self, other):
+        xs = CrossSection(self) + (-other)
         return xs
     
     def debug(self):
-        print("-" * 10 + " XS " + "-" * 30)
-        print("kg\tD\tSiga\tSigs\tnuSigf\tXi")
-        for kg in range(0,2):
-            print( )
-            print(kg, self.d[kg], self.siga[kg], self.sigs[kg], self.nusigf[kg], self.xi[kg], sep='\t', end='\n')
-        print("-"*44)
+        print("-" * 9 + " XS " + "-" * 9)
+        print("D\tSiga\tNuSigf")
+        print(self.x[DIF], self.x[SIGA], self.x[NUSIGF], sep='\t', end='\n')
+        print("-"*22)
 
 
-if __name__ == '__main__':
+if( __name__ == '__main__'):
     xs = CrossSection()
-    for kg in range(0,2):
-        xs.set_d(kg, kg*10+1.0)
-        xs.set_siga(kg, kg*10+2.0)
-        xs.set_sigs(kg, kg*10+3.0)
-        xs.set_nusigf(kg, kg*10+4.0)
-        xs.set_xi(kg, kg*10+5.0)
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
     xs.debug()
-    
     
     xs2 = xs * 2.0
     xs2.debug()
