@@ -62,8 +62,7 @@ class NodeTest(unittest.TestCase):
 
             # red/black done
             rr = CrossSection()
-            for ix in range(len(nodes)):
-                the_node = nodes[ix]
+            for the_node in nodes:
                 rr = rr + the_node.get_xs() * the_node.get_flux() * the_node.get_width()
             
             #keff = rr.nusigf() / rr.siga()
@@ -75,8 +74,8 @@ class NodeTest(unittest.TestCase):
             keff_old = keff
             pro_old = rr.nusigf()
 
-            for ix in range(len(nodes)):
-                nodes[ix].set_keff(keff)
+            for the_node in nodes:
+                the_node.set_keff(keff)
             
         # debug
         #print("flux")
@@ -92,7 +91,7 @@ class NodeTest(unittest.TestCase):
     def test_two_regions_zeroflux_bc(self):
         xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
         xs_ref  = CrossSection([0.55, 0.0127, 0.0])
-        delta = 0.1
+        delta = 1.0
         geom = [{'xs':xs_ref, 'width':60}, {'xs':xs_fuel, 'width':60}, {'xs':xs_ref, 'width':60} ]
 
         nodes = []        
@@ -104,11 +103,11 @@ class NodeTest(unittest.TestCase):
         
         keff_old = 1.0
         pro_old = 1.0
-        conv = 1.0e-10
+        conv = 1.0e-7
         for ik in range(3000):  # outer iteration
 
-            for istart in range(2):  # start color (0: red, 1:black)
-                for ix in range(istart, len(nodes), 2):
+            for color in range(2):  # color (0: red, 1:black)
+                for ix in range(color, len(nodes), 2):
                     if(ix==0):
                         jin_xm = -nodes[ix].get_jout(XM)
                     else:
@@ -125,31 +124,33 @@ class NodeTest(unittest.TestCase):
 
             # red/black done
             rr = CrossSection()
-            for ix in range(len(nodes)):
-                the_node = nodes[ix]
+            for the_node in nodes:
                 rr = rr + the_node.get_xs() * the_node.get_flux() * the_node.get_width()
             
             #keff = rr.nusigf() / rr.siga()
             keff = rr.nusigf() / (pro_old/keff_old)
             diff = abs((keff - keff_old)/keff)
-            if( ik % 100 == 0):
-                print( ik, keff, diff)
+
+            #if( ik % 100 == 0):
+                #print( ik, keff, diff)
+
             if(diff < conv):
                 break
             keff_old = keff
             pro_old = rr.nusigf()
 
-            for ix in range(len(nodes)):
-                nodes[ix].set_keff(keff)
+            for the_node in nodes:
+                the_node.set_keff(keff)
             
         # debug
         #print("flux")
         #for ix in range(len(nodes)):
         #    print(ix, nodes[ix].get_flux())
 
-        print("keff=",keff)
-        self.assertAlmostEqual(keff, 1.41102, places=5)
+        #print("keff=",keff)
+        # self.assertAlmostEqual(keff, 1.41102, places=5)  # keff with strict condition
+        self.assertAlmostEqual(keff, 1.41124, places=5)  # keff with strict condition
 
-if __name__ == '__main__':
+if(__name__ == '__main__'):
     unittest.main()
     
