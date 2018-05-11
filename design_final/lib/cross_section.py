@@ -84,7 +84,7 @@ class CrossSection:
         print("-"*22)
 
 
-if( __name__ == '__main__'):
+if __name__ == '__main__':
     xs = CrossSection()
     xs.set_d(1.0)
     xs.set_siga(2.0)

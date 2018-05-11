@@ -46,5 +46,13 @@ class ContainerTest(unittest.TestCase):
         self.assertAlmostEqual(keff, kana, places=5)
 
 
-if(__name__ == '__main__'):
+        flux = cont.get_flux_dist()
+        self.assertEqual(len(flux), 2)  # x, y
+        self.assertEqual(len(flux[0]), int(geom[0]['width']/delta))
+        self.assertEqual(flux[0][0], delta/2.0)
+        self.assertEqual(flux[0][-1], geom[0]['width']-delta/2.0)
+        self.assertEqual(len(flux[1]), int(geom[0]['width']/delta))
+
+
+if __name__ == '__main__':
     unittest.main()

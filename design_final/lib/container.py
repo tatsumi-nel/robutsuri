@@ -46,6 +46,17 @@ class Container:
         for the_node in self.nodes:
             the_node.set_keff(keff)            
 
+    def get_flux_dist(self):
+        x_pos = []
+        x_sum = 0.0
+        flux = []
+        for the_node in self.nodes:
+            w = the_node.get_width()
+            x_pos.append( x_sum + w/2 )            
+            x_sum += w
+            flux.append( the_node.get_flux() )
+        return [x_pos, flux]
+
 
     def debug(self):
         print("nodes: ", len(self.nodes))

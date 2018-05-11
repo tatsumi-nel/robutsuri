@@ -151,6 +151,6 @@ class NodeTest(unittest.TestCase):
         # self.assertAlmostEqual(keff, 1.41102, places=5)  # keff with strict condition
         self.assertAlmostEqual(keff, 1.41124, places=5)  # keff with strict condition
 
-if(__name__ == '__main__'):
+if __name__ == '__main__':
     unittest.main()
     

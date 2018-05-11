@@ -35,5 +35,5 @@ class ContainerContainerTest(unittest.TestCase):
         self.assertAlmostEqual(keff, kana, places=5)
 
 
-if(__name__ == '__main__'):
+if __name__ == '__main__':
     unittest.main()

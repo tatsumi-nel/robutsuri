@@ -52,5 +52,5 @@ class NodeTest(unittest.TestCase):
         xs4_ref = CrossSection([6.0, 12.0, 18.0])
         self.assertEqual(xs4, xs4_ref)
 
-if( __name__ == '__main__'):
+if __name__ == '__main__':
     unittest.main()

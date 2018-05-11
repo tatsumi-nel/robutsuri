@@ -77,7 +77,7 @@ class Node:
         print("-"*50)
 
 
-if(__name__ == '__main__'):
+if __name__ == '__main__':
     node = Node()
     xs = CrossSection([1.36, 0.0181, 0.0279])
     xs.debug()
