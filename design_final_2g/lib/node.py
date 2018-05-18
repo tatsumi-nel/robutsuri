@@ -99,26 +99,3 @@ class Node:
         self.xs.debug()
         print("-"*50)
 
-
-if __name__ == '__main__':
-    node = Node()
-    xs = CrossSection()
-    xs.set([[1.58, 0.0032, 0.0, 1.0],[0.271, 0.0930, 0.168, 0.0]])
-    xs.set_smat( [[0.0, 0.0178], [0.0, 0.0]])
-
-    xs.debug()
-    node.set_xs(xs)
-
-    b2 = 0.0
-    kana_nume = (xs.siga(1) + xs.dif(1)*b2)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
-    kana_domi = (xs.dif(0)*b2 + xs.siga(0) ) * (xs.dif(1)*b2 + xs.siga(1))
-    kana = kana_nume / kana_domi
-    print("kana=", kana)
-
-    node.set_keff( kana )
-    node.debug()    
-    
-    for kg in range(2):
-        node.calc(kg)
-    
-    node.debug()    

@@ -35,12 +35,19 @@ class Container:
             self.nodes[ix].set_jin(XP, jin_xp)
             self.nodes[ix].calc()
 
-
-    def reaction_rates(self):
-        rr = CrossSection()
+    def calc_fis_src(self):
         for the_node in self.nodes:
-            rr = rr + the_node.get_xs() * the_node.get_flux() * the_node.get_width()
-        return rr
+            the_node.calc_fis_src()
+
+    def get_total_fis_src(self):
+        total_fis_src = 0.0
+        for the_node in self.nodes:
+            total_fis_src += the_node.get_fis_src()
+        return total_fis_src
+
+    def normalize_fis_src(self, factor):
+        for the_node in self.nodes:
+            the_node.normalize_fis_src(factor)
 
     def set_keff(self, keff):
         for the_node in self.nodes:

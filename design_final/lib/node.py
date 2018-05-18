@@ -11,6 +11,7 @@ class Node:
         self.width = 1.0
         self.xs = None
         self.keff = 1.0
+        self.fis_src = 1.0
         if(xs):
             self.set_xs(xs)
 
@@ -43,6 +44,16 @@ class Node:
 
     def get_width(self):
         return self.width
+
+    def get_fis_src(self):
+        return self.fis_src
+
+    def calc_fis_src(self):
+        # fission source
+        self.fis_src = self.xs.nusigf() * self.flux * self.width
+
+    def normalize_fis_src(self, factor):
+        self.fis_src *= factor
 
     def calc(self):
         src = self.xs.nusigf() * self.flux / self.keff

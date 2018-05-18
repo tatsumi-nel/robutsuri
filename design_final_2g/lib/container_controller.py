@@ -21,7 +21,7 @@ class ContainerController:
             self.cont.normalize_fis_src(norm_factor)
 
             for kg in range(self.cont.get_ng()):
-                for i in range(self.inner_iterations):
+                for idx_inner in range(self.inner_iterations):
                     for color in range(2):
                         self.cont.calc(kg, color)
                     

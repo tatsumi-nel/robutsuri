@@ -122,12 +122,4 @@ class CrossSection:
         print("-"*42)
 
 
-if __name__ == '__main__':
-    xs = CrossSection()
-    xs.set_d(1.0)
-    xs.set_siga(2.0)
-    xs.set_nusigf(3.0)
-    xs.debug()
-    
-    xs2 = xs * 2.0
-    xs2.debug()
+

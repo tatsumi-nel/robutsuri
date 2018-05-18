@@ -30,14 +30,14 @@ class ContainerTest(unittest.TestCase):
         total_fis_src_old = 1.0
         conv = 1.0e-7
         
-        for ik in range(100):
+        for idx_outer in range(100):
 
             total_fis_src = cont.get_total_fis_src()
             norm_factor = 1.0 / (total_fis_src/keff)
             cont.normalize_fis_src(norm_factor)
 
             for kg in range(2):
-                for i in range(4):
+                for idx_inner in range(4):
                     for color in range(2):
                         cont.calc(kg, color)
             

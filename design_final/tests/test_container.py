@@ -21,29 +21,38 @@ class ContainerTest(unittest.TestCase):
         cont = Container(geom, delta, albedo)
         #cont.debug()
 
+        keff = 1.0
         keff_old = 1.0
-        pro_old = 1.0
+        total_fis_src_old = 1.0
         conv = 1.0e-7
         
-        for ik in range(2000):
+        for idx_outer in range(100):
 
-            for color in range(2):
-                cont.calc(color)
-            rr = cont.reaction_rates()
+            total_fis_src = cont.get_total_fis_src()
+            norm_factor = 1.0 / (total_fis_src/keff)
+            cont.normalize_fis_src(norm_factor)
 
-            keff = rr.nusigf() / (pro_old/keff_old)
+            for idx_inner in range(4):
+                for color in range(2):
+                    cont.calc(color)
+        
+            cont.calc_fis_src()
+
+            total_fis_src = cont.get_total_fis_src()
+            
+            keff = total_fis_src / (total_fis_src_old/keff_old)
             diff = abs((keff - keff_old)/keff)
             #print( keff, diff)
             if(diff < conv):
                 break
             keff_old = keff
-            pro_old = rr.nusigf()
+            total_fis_src_old = total_fis_src
 
             cont.set_keff(keff)
 
         kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
         #print( 'kana = ', kana)
-        self.assertAlmostEqual(keff, kana, places=5)
+        self.assertAlmostEqual(keff, kana, places=4)
 
 
         flux = cont.get_flux_dist()
