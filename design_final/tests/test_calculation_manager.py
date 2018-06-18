@@ -4,7 +4,6 @@ import sys
 sys.path.append('../lib')
 import math
 
-from config import *
 from cross_section import CrossSection
 from node import Node
 from container import Container

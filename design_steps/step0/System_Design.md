@@ -9,8 +9,8 @@
 ## 設計・実装アプローチ
 - オブジェクト指向
 - テスト駆動型開発
-- 外部ライブラリは用いない
-    - Pure Python での実装
+- 外部ライブラリはできるだけ用いない
+    - 基本ライブラリのみでの実装
 
 ## プログラミング・フレームワーク
 - MVC (Model-View-Controller) モデル
@@ -19,16 +19,11 @@
 ## クラス
 - Model
     - 断面積 (CrossSection)
-    - 中性子束 (Flux)
-    - 中性子流 (Current)
-    - ノード (Node)
-        - 計算ノード (CNode)
-        - 境界ノード (BNode)
+    - 計算ノード (Node)
     - 計算体系 (Container)
 
 - View (今回は実装しない)
     - 帳票出力 (Editor)
-     
 
 - Controller & Manager
     - 計算体系制御 (ContainerController)
