@@ -21,6 +21,8 @@ class NodeTest(unittest.TestCase):
         for k in range(100):
             node.calc()
 
+        node.debug()
+
         self.assertEqual(node.get_jout(XM), node.get_jout(XP))
         self.assertEqual(node.get_jin(XM), node.get_jout(XM))
         self.assertEqual(node.get_jin(XP), node.get_jout(XP))

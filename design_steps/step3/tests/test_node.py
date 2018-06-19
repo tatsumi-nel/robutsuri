@@ -1,58 +1,37 @@
 import unittest
 
 import sys
-sys.path.append('../')
+sys.path.append('../lib')
+import math
 
-from lib.node import Node
-from lib.cross_section import CrossSection
+from config import *
+from cross_section import CrossSection
+from node import Node
 
 class NodeTest(unittest.TestCase):
 
-    def setUp(self):
-        self.xs = CrossSection()
-        self.xs.set_d(0, 1.58)
-        self.xs.set_d(1, 0.271)
-        self.xs.set_siga(0, 0.0200)
-        self.xs.set_siga(1, 0.0930)
-        self.xs.set_sigs(0, 0.0178)  # down scatter only
-        self.xs.set_sigs(1, 0.0000)  # dummy
-        self.xs.set_nusigf(0, 0.0)
-        self.xs.set_nusigf(1, 0.168)
-        self.xs.set_xi(0, 1.0)
-        self.xs.set_xi(1, 0.0)
+    def test_onenode(self):
+        node = Node()
+        xs = CrossSection([1.36, 0.0181, 0.0279])
+        #xs.debug()
+        node.set_xs(xs)
+        node.set_keff( xs.nusigf() / xs.siga() )    
+        node.calc()
 
-    def test_set1(self):
-        self.assertEqual(self.xs.get_d(0), 1.58)
-        self.assertEqual(self.xs.get_d(1), 0.271)
-        self.assertEqual(self.xs.get_siga(0), 0.0200)
-        self.assertEqual(self.xs.get_siga(1), 0.0930)
-        self.assertEqual(self.xs.get_sigs(0), 0.0178)
-        self.assertEqual(self.xs.get_sigs(1), 0.0)
-        self.assertEqual(self.xs.get_nusigf(0), 0.0)
-        self.assertEqual(self.xs.get_nusigf(1), 0.168)
-        self.assertEqual(self.xs.get_xi(0), 1.0)
-        self.assertEqual(self.xs.get_xi(1), 0.0)
+        for k in range(100):
+            jout_xm = node.get_jout(XM)
+            jout_xp = node.get_jout(XP)
+            node.set_jin(XM, jout_xm)
+            node.set_jin(XP, jout_xp)
+            node.calc()
 
-    def test_set2(self):
-        xs2 = CrossSection()
-        xs2.set_d(0, 1.58)
-        xs2.set_d(1, 0.271)
-        xs2.set_siga(0, 0.0200)
-        xs2.set_siga(1, 0.0930)
-        xs2.set_sigs(0, 0.0178)  # down scatter only
-        xs2.set_sigs(1, 0.0000)  # dummy
-        xs2.set_nusigf(0, 0.0)
-        xs2.set_nusigf(1, 0.168)
-        xs2.set_xi(0, 1.0)
-        xs2.set_xi(1, 0.0)
-        
-        self.assertEqual(self.xs,  xs2)
+        node.debug()
 
-        xs3 = xs2 * 2.0
-        self.assertNotEqual(self.xs, xs3)
-        
-        xs4 = xs2 + xs2
-        self.assertEqual(xs4, xs3)
+        self.assertEqual(node.get_jout(XM), node.get_jout(XP))
+        self.assertEqual(node.get_jin(XM), node.get_jout(XM))
+        self.assertEqual(node.get_jin(XP), node.get_jout(XP))
+        self.assertEqual(node.get_jout(XM)+node.get_jin(XM), node.get_flux() / 2.0)
+
 
 if __name__ == '__main__':
     unittest.main()

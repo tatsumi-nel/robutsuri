@@ -1,12 +1,8 @@
 import numpy as np
-
-from cross_section import *
+from cross_section import CrossSection
 from config import *
 
 class Node:
-    """
-        計算ノード
-    """
     def __init__(self, xs=None):
         self.jout = np.ones(2)    # out-going, [XM, XP]
         self.jin  = np.ones(2)    # in-coming, [XM, XP]
@@ -26,10 +22,7 @@ class Node:
 
     def set_width(self, val):
         self.width = val
-
-    def set_flux(self, val):
-        self.flux = val
-    
+            
     def get_flux(self):
         return self.flux
 
@@ -38,7 +31,7 @@ class Node:
 
     def get_jin(self, dir):
         return self.jin[dir]
-    
+
     def get_jout(self, dir):
         return self.jout[dir]
 
@@ -78,7 +71,6 @@ class Node:
         self.jout[XM]  = jnet_XM  + self.jin[XM]
         self.jout[XP] = jnet_XP + self.jin[XP]
 
-
     def debug(self):
         print("-"*3 + " Node " + "-"*40)
         print("  jin_XM \t", self.jin[XM] )
@@ -93,10 +85,9 @@ class Node:
 
 if __name__ == '__main__':
     node = Node()
-    xs = CrossSection([1.36, 0.0181, 0.0279])
-    xs.debug()
+    xs = CrossSection()
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
     node.set_xs(xs)
-    node.set_keff( xs.nusigf() / xs.siga() )    
-    node.debug()    
-    node.calc()
-    node.debug()    
+    node.debug()

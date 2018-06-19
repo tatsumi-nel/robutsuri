@@ -1,27 +1,33 @@
 import numpy as np
 from cross_section import CrossSection
+from config import *
 
 class Node:
-    def __init__(self):
-        self.jp = np.zeros(2)
-        self.jm = np.zeros(2)
-        self.flux = np.zeros(2)
+    def __init__(self, xs=None):
+        self.jout = np.ones(2)    # out-going, [XM, XP]
+        self.jin  = np.ones(2)    # in-coming, [XM, XP]
+        self.flux  = 1.0    # average flux
+        self.width = 1.0
         self.xs = None
-        
-    def set_flux(self, kg, val):
-        self.flux[kg] = val
+        self.keff = 1.0
+        self.fis_src = 1.0
+        if(xs):
+            self.set_xs(xs)
 
-    def set_xs(self, xs):
-        self.xs = xs
+    def set_xs(self, val):
+        self.xs = val
 
     def calc(self):
         pass
 
     def debug(self):
         print("-"*3 + " Node " + "-"*40)
-        print("kg\tjp\tjm\tflux")
-        for kg in range(0,2):
-            print(kg, self.jp[kg], self.jm[kg], self.flux[kg], sep='\t', end='\n')
+        print("  jin_XM \t", self.jin[XM] )
+        print("  jin_XP \t", self.jin[XP])
+        print("  jout_XM\t", self.jout[XM])
+        print("  jout_XP\t", self.jout[XP])
+        print("  flux   \t", self.flux)
+        print("  keff   \t", self.keff)
         self.xs.debug()
         print("-"*50)
 
@@ -29,5 +35,8 @@ class Node:
 if __name__ == '__main__':
     node = Node()
     xs = CrossSection()
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
     node.set_xs(xs)
     node.debug()
