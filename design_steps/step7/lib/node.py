@@ -50,18 +50,16 @@ class Node:
 
     def normalize_fis_src(self, factor):
         self.fis_src *= factor
-
+   
     def calc(self):
-        src = self.xs.nusigf() * self.flux / self.keff
-
         #flux by Eq(28)
         coef1 = 2.0*self.xs.dif() / self.width
         coef2 = 2.0*coef1
         coef3 = 1.0 + coef2
         f_nume = coef1 * 4.0 * (self.jin[XP] + self.jin[XM]) + \
-                 coef3 * self.width * src
-        f_domi = coef2 + coef3*self.xs.siga()*self.width
-        self.flux = f_nume / f_domi
+                 coef3 * self.fis_src / self.keff
+        f_deno = coef2 + coef3*self.xs.siga()*self.width
+        self.flux = f_nume / f_deno
 
         #net current by Eq(29)
         jnet_XM  = -coef1 * (4.0*self.jin[XM] - self.flux) / coef3
@@ -91,3 +89,4 @@ if __name__ == '__main__':
     xs.set_nusigf(3.0)
     node.set_xs(xs)
     node.debug()
+

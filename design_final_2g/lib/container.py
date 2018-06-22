@@ -44,12 +44,15 @@ class Container:
         for the_node in self.nodes:
             the_node.calc_fis_src(kg)
 
+    def calc_scat_src(self, kg):
+        for the_node in self.nodes:
+            the_node.calc_scat_src(kg)
 
     def get_total_fis_src(self):
         total_fis_src = 0.0
         for kg in range(self.ng):
             for the_node in self.nodes:
-                total_fis_src += the_node.get_fis_src(kg)
+                total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()
         return total_fis_src
 
     def normalize_fis_src(self, factor):

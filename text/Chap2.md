@@ -21,11 +21,11 @@ Python の文法は非常にシンプルだ。また、構文（スコープ）�
 
 #### 変数・演算
 
-これといって特徴はない。普通に使える。ただし、インクリメント・デクリメント演算子(++, --) は存在しないので C++使いの人は要注意。
+これといって特徴はない。他の言語と同様に使える。ただし、インクリメント・デクリメント演算子(++, --) は存在しないので C++使いの人は要注意。
 
 ```Python
 hoge = 10
-page = hoge * 2.0
+page = ( hoge + 1 ) / 2.0
 page += hoge
 ```
 
@@ -321,27 +321,950 @@ Container は ContainerController から「計算しろ」と言われたら、C
 
 ### Step1: 基本的なオブジェクトの設計と実装
 
+基本的な方針が出せたので、いよいよ実際にコーディングを始めてみよう。
+
+ここでは、最も基本的なデータ要素となる断面積クラスを実装してみよう。ファイル名は cross_section.py とした。
+
+```Python
+import numpy as np
+
+# 定数
+N_REACT = 3  # D, Siga, nuSigf
+DIF    = 0
+SIGA   = 1
+NUSIGF = 2
+
+class CrossSection:
+    """
+    断面積クラス (1群)
+    """
+
+    def __init__(self, val=None):
+        """
+        コンストラクタ
+        """
+        self.x = np.zeros(N_REACT)
+        if(not (val is None)):
+            self.set(val)
+
+    def set_d(self, val):
+        self.x[DIF] = val
+
+    def set_siga(self, val):
+        self.x[SIGA] = val
+
+    def set_nusigf(self, val):
+        self.x[NUSIGF] = val
+
+    def dif(self):
+        return self.x[DIF]
+
+    def siga(self):
+        return self.x[SIGA]
+
+    def nusigf(self):
+        return self.x[NUSIGF]
+
+    def debug(self):
+        print("-" * 9 + " XS " + "-" * 9)
+        print("D\tSiga\tNuSigf")
+        print(self.x[DIF], self.x[SIGA], self.x[NUSIGF], sep='\t', end='\n')
+        print("-"*22)
+
+if __name__ == '__main__':
+    xs = CrossSection()
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
+    xs.debug()
+
+```
+
+クラス定義やメソッド定義の直下にはコメントを入れることが出来るので、必要に応じて入れると良いだろう。
+
+最初ということで、必要最小限のメソッド群を定義している。具体的には、コンストラクタ(\_\_init\_\_)、拡散係数の設定(set_d)、吸収断面積の設定(set_siga)、生成断面積の設定(set_nusigf)、拡散係数の取得(dif)、吸収断面積の取得(siga)、生成断面積の取得(nusigf)、デバッグ用メソッド(debug)である。最後のデバッグ用メソッドについては、文字列化する特殊メソッド \_\_str\_\_ として定義する方法もある。
+
+ここで、数値演算用ライブラリである Numpy を用いていることに注目して欲しい。Numpy は Python で高速に計算させる場合には必須なので、必ずチェックしておこう。
+
+最後の if ブロックは、このスクリプトを
+
+```bash
+python cross_section.py
+```
+
+と実行した際に流れる部分であり、よく使われるテクニックであるので、これも覚えておこう。
+
+さて次に、計算ノードも実装しておこう。こんな感じになる。
+
+```Python
+import numpy as np
+from cross_section import CrossSection
+from config import *
+
+class Node:
+    def __init__(self, xs=None):
+        self.jout = np.ones(2)    # out-going, [XM, XP]
+        self.jin  = np.ones(2)    # in-coming, [XM, XP]
+        self.flux  = 1.0    # average flux
+        self.width = 1.0
+        self.xs = None
+        self.keff = 1.0
+        self.fis_src = 1.0
+        if(xs):
+            self.set_xs(xs)
+
+    def set_xs(self, val):
+        self.xs = val
+
+    def calc(self):
+        pass
+
+    def debug(self):
+        print("-"*3 + " Node " + "-"*40)
+        print("  jin_XM \t", self.jin[XM] )
+        print("  jin_XP \t", self.jin[XP])
+        print("  jout_XM\t", self.jout[XM])
+        print("  jout_XP\t", self.jout[XP])
+        print("  flux   \t", self.flux)
+        print("  keff   \t", self.keff)
+        self.xs.debug()
+        print("-"*50)
+
+
+if __name__ == '__main__':
+    node = Node()
+    xs = CrossSection()
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
+    node.set_xs(xs)
+    node.debug()
+```
+
+冒頭の import 文で、CrossSection オブジェクトの定義を cross_section.py から読み込んでいる。また、次の config.py で定義されている定数を読み込んでいる。
+
+```Python
+# 定数
+
+## 方向
+XM = 0
+XP = 1
+```
+
+Node では、部分中性子流、中性子束、メッシュ幅、断面積オブジェクト、実効増倍率、核分裂源をそれぞれ定義している。
+
+calcメソッドもとりあえず定義しているが、現時点で実態は無い。とりあえず、メソッドだけを準備しておくということは初期の段階で良くやる方法だ。
+
 
 ### Step2: テストコードを準備する
+
+次に、いよいよテストコードを準備する。テスト駆動開発に慣れてくれば、いきなりこのステップから始めても良い（というか、むしろその方が自然）。
+
+ここで問題が出てくる。それは、実際のコード本体とテストコードが混在してしまうということだ。この回答として、それぞれを別々のディレクトリに集約するということを良くやる。たとえばこんな感じだ。
+
+~~~
+(project_root) ----+ (ここにメインプログラムを配置)
+                   |
+                   +--- lib----+--- cross_section.py
+                   |           |
+                   |           +--- node.py
+                   |
+                   +--- tests--+--- test_cross_section.py
+                               |
+                               +--- test_node.py
+~~~
+
+で、実際のテストコードを見てみよう。test_cross_section.py は次のような感じだ。
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+
+from node import Node
+from cross_section import CrossSection
+
+class CrossSectionTest(unittest.TestCase):
+
+    def test_sets(self):
+        xs = CrossSection()
+        xs.set_d(1.0)
+        xs.set_siga(2.0)
+        xs.set_nusigf(3.0)
+        self.assertEqual(xs.dif(), 1.0)
+        self.assertEqual(xs.siga(), 2.0)
+        self.assertEqual(xs.nusigf(), 3.0)
+ 
+    def test_sets3(self):
+        xs1 = CrossSection()
+        xs1.set([1.0, 2.0, 3.0])
+        xs1_ref = CrossSection()
+        xs1_ref.set(xs1)
+        self.assertEqual(xs1, xs1_ref)
+    
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+ここでは、単体テスト・フレームワークのライブラリである unittest を用いた。
+
+cross_section.py や node.py が異なるディレクトリ (../lib) にあるため、import の際の読み込みパスを追加している点に注目してほしい。
+
+unittest では、各テストメソッドは名前が test から始まる規約となっているので、そのような命名ルールになっている。
+
+このテストを実行すると、下記のようにテストが成功するはずだ。
+
+~~~
+% python test_cross_section.py
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK
+~~~
+
+えっ？ なんでこんな面倒くさいことをするのかって？
+
+まぁ、この段階では面倒な部分しか見えないだろう。しかし、テストコードを書くということは、幾つかのメリットがあるのだ。大きなものとしては次の3つが挙げられる。
+
+- テストコードの作成を通じて、必要なロジックを素早く書ける
+- 常にテストを実行することで、いち早くエラーを検出できる
+- テストコードが上位層クラスにおけるメソッドのひな形になる
+
+
+最初にテストを書く "Test First" の姿勢を取っていれば、木を見て森を見ずという状態にはなりにくい。というのも、**テストコードが「成功」する状態にするために、ライブラリに記述する最小限のコードに集中できる**からだ。
+
+いったんテストコードが成功すれば、さらに、**システムがあるべき姿になったときに成功すべきテストコードを追加する**。そして、次にこのテストが成功するようにライブラリを作っていく･･･。あとはこの繰り返しだ。
+
+この時、繰り返しテストを実行しているわけであるから、万一エラーが発生したとしても、**テストがもれなく・重複なく作成されている限り**、その段階ですぐに見つかる。
+
+したがって、テスト駆動開発の要は、テストコードをしっかり書くということに他ならない。そのため、テストコードの行数がライブラリ本体よりもずっと多いというプロジェクトも決して珍しくない。
+
+この「テストを最初に書いて、それが成功するようにライブラリ本体を書く」とう発想の転換は最初は衝撃的かもしれないが、すぐに慣れてくる。そのうち、テストコードを書いてテストを通すのが快感(?)になってくるはずだ。
+
+そして3番目のメリットについては、もう少し後で説明することにする。
+
+その前に、Node クラスのテストコードも示しておこう。
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+from config import *
+from cross_section import CrossSection
+from node import Node
+
+class NodeTest(unittest.TestCase):
+
+    def test_onenode(self):
+        node = Node()
+        xs = CrossSection([1.36, 0.0181, 0.0279])
+        #xs.debug()
+        node.set_xs(xs)
+        node.set_keff( xs.nusigf() / xs.siga() )    
+        node.calc()
+
+        for k in range(100):
+            jout_xm = node.get_jout(XM)
+            jout_xp = node.get_jout(XP)
+            node.set_jin(XM, jout_xm)
+            node.set_jin(XP, jout_xp)
+            node.calc()
+
+        node.debug()
+
+        self.assertEqual(node.get_jout(XM), node.get_jout(XP))
+        self.assertEqual(node.get_jin(XM), node.get_jout(XM))
+        self.assertEqual(node.get_jin(XP), node.get_jout(XP))
+        self.assertEqual(node.get_jout(XM)+node.get_jin(XM), node.get_flux() / 2.0)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+このテストコードにおいて、Node クラスの実際の使われ方(ユースケース)を定義している。このテストが成功するように Node クラスの実装を整備していくのである。
+
+
+テストコードが通るようになった段階で、Git リポジトリを作成し、コミットしておこう。
+
+```bash
+git init
+git add .
+git commit -m "initial import"
+```
+
 
 
 ### Step3: CrossSectionクラスの拡張
 
+次に、CrossSection クラスをもう少し拡張していこう。最初にやることは･･･そうだ、テストを書くことだ！  test_cross_section.py に次のテストを追加しよう。
+
+```Python
+   def test_operation_add(self):
+        xs1 = CrossSection([1.0, 2.0, 3.0])
+        xs2 = CrossSection([2.0, 3.0, 4.0])
+        xs3 = xs1 + xs2
+        xs3_ref = CrossSection([3.0, 5.0, 7.0])
+        self.assertEqual(xs3, xs3_ref)
+
+    def test_operation_sub(self):
+        xs1 = CrossSection([1.0, 2.0, 3.0])
+        xs2 = CrossSection([2.0, 3.0, 4.0])
+        xs3 = xs2 - xs1
+        xs3_ref = CrossSection([1.0, 1.0, 1.0])
+        self.assertEqual(xs3, xs3_ref)
+
+    def test_operation_mul(self):
+        xs1 = CrossSection([1.0, 2.0, 3.0])
+        xs2 = xs1 * 2.0
+        xs2_ref = CrossSection([2.0, 4.0, 6.0])
+        self.assertEqual(xs2, xs2_ref)
+
+        xs3 = 2.0 * xs1
+        xs3_ref = CrossSection([2.0, 4.0, 6.0])
+        self.assertEqual(xs3, xs3_ref)
+
+        xs4 = 2.0 * xs1 * 3.0
+        xs4_ref = CrossSection([6.0, 12.0, 18.0])
+        self.assertEqual(xs4, xs4_ref)
+```
+
+先ほどのテストとの違いは次の３つだ。
+
++ コンストラクタに引数を取れるようにした
++ 足し算、引き算、掛け算を定義
++ オブジェクト同士の比較を定義
+
+以上のコードを追加したテストが成功するように、CrossSectionクラスを拡張していこう。
+以下に拡張例を示しておく。
+
+```Python
+    def __eq__(self, other):
+        return np.allclose(self.x, other.x)
+            
+    def __mul__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= factor
+        return xs
+
+    def __rmul__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= factor
+        return xs
+
+    def __truediv__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= (1.0/factor)
+        return xs
+
+    def __neg__(self):
+        return self * (-1.0)
+
+    def __add__(self, other):
+        xs = CrossSection(self)
+        xs.x += other.x
+        return xs
+    
+    def __sub__(self, other):
+        xs = CrossSection(self) + (-other)
+        return xs
+```
+
 
 ### Step4: Nodeクラスの拡張
 
+次に、Node クラスのテストを拡張しよう。いよいよ、応答行列法を用いた Red/Black Iteration の実装に入ってくる。
+
+べき乗法 (Power Method)による固有値問題の基本的な解法は次のようになる（詳細は、別途理論編を参照されたい）
+
+なお、zero flux 境界条件を仮定する。
+
+基本的なアルゴリズムは次の通りだ。
+
+---
+#### 基本的なアルゴリズム
+
+1. 初期の核分裂中性子源を設定する。体系全体の全核分裂源(total_fis_src) / keff が 1.0となるように規格化する。
+
+2. 内側反復計算において
+    - 自ノードの入射中性子流を準備する (隣のノードの放出中性子）
+        - ただし、境界部においては、自分の放出中性子流の符号を反転させたものを用いる
+    - 応答行列を用いて、放出中性子流と中性子束を求める
+
+3. 更新された中性子束を用いて核分裂源を計算する
+
+4. 実効増倍率 = 今回の核分裂源 / ( 前回の核分裂源 / 前回の実効増倍率 )
+
+5. 収束していなければ 2. へ戻る
+
+---
+
+
+これをテストコードに落とし込んだものが次だ。ここが本講義で最も重要なステップなので、コードをよく見て欲しい。
+
+
+```Python
+    def test_uniform_zeroflux_bc(self):
+        xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+        delta = 1.0
+        geom = [{'xs':xs_fuel, 'width':100}]
+
+        nodes = []        
+        for r in geom:
+            for k in range(int(r['width']/delta)):
+                the_node = Node(r['xs'])
+                the_node.set_width(delta)
+                nodes.append(the_node)
+        
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-7
+
+        for idx_outer in range(2000):  # outer iteration
+
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # normalize fis src to make total fis src unity
+            norm_factor = 1.0 / (total_fis_src/keff)
+            for the_node in nodes:
+                the_node.normalize_fis_src(norm_factor)
+
+            # inner iteration with fixed fis src
+            for istart in range(2):  # start color (0: red, 1:black)
+                for ix in range(istart, len(nodes), 2):
+                    if(ix==0):  # left boundary
+                        jin_xm = -nodes[ix].get_jout(XM)
+                    else:
+                        jin_xm = nodes[ix-1].get_jout(XP)
+                    
+                    if(ix==len(nodes)-1):  # right boundary
+                        jin_xp = -nodes[ix].get_jout(XP)
+                    else:
+                        jin_xp = nodes[ix+1].get_jout(XM)
+
+                    nodes[ix].set_jin(XM, jin_xm)
+                    nodes[ix].set_jin(XP, jin_xp)
+                    nodes[ix].calc()
+            
+            # calculation of new fission source
+            for the_node in nodes:
+                the_node.calc_fis_src()
+            
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # estimation of eigen value as a ratio of generations
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+                                  
+            diff = abs((keff - keff_old)/keff)
+            #print( idx_outer, keff, diff)
+
+            if(diff < conv):  
+                break
+
+            keff_old = keff
+            total_fis_src_old = total_fis_src
+
+            # set new eigen value to all the nodes
+            for the_node in nodes:
+                the_node.set_keff(keff)
+            
+
+        # reference as analytical solution
+        kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
+        #print( 'kana = ', kana)
+        self.assertAlmostEqual(keff, kana, places=5)
+```
+
+いかがだっただろうか？
+
+基本的にはアルゴリズムを忠実にコードの落とし込んだものだから、理解できたと思う。
+
+で、このテストコードが成功するように Node クラスを拡張していこう。ここで肝となるのが、応答行列法による計算部分だ。詳細は理論編を参照するとして、ここではエッセンスを示しておく。
+
+---
+#### 応答行列法を用いた拡散方程式の解法
+
+1. 着目メッシュ $i$ に対する入射中性子流 $j^-_{i\pm1/2}$ を既知とする。
+
+2. 以下の式を用いてメッシュ $i$ における平均中性子束 $\phi_i$ を計算する。
+
+$$ \{\frac{4 D}{\Delta x} + (1 + \frac{4 D}{\Delta x}) \Sigma_{a,i} \} \phi_i = \frac{2D}{\Delta x}(4 J^-_{i+1/2} + 4 J^-_{i-1/2})+(1+\frac{4D}{\Delta x})\Delta S_i$$ (28)
+
+3. 入射中性子流 $J^-_{i\pm 1/2}$ とノード平均中止子束 $\phi_i$ から、境界における中性子流 $J_{i\pm 1/2}$ を以下の式で計算する。
+
+$$ J_{i\pm 1/2} = \frac{-\frac{2D}{\Delta x}(4 J^-_{i\pm 1/2}-\phi_i)}{(1+\frac{4D}{\Delta x})}$$ (29)
+
+4. 入射中性子流 $J^-_{i\pm 1/2}$ と中性子流 $J_{i\pm 1/2}$ から、放出中性子流 $J^+_{i\pm 1/2}$ を以下の式で計算する。
+
+$$ J^+_{i\pm 1/2} = J_{i\pm 1/2} + J^-_{i\pm 1/2}$$ (30)
+---
+
+上記の解法を calc メソッドに実装し、他のメソッドも準備したものが次のコードだ。
+
+
+```Python
+import numpy as np
+from cross_section import CrossSection
+from config import *
+
+class Node:
+    def __init__(self, xs=None):
+        self.jout = np.ones(2)    # out-going, [XM, XP]
+        self.jin  = np.ones(2)    # in-coming, [XM, XP]
+        self.flux  = 1.0    # average flux
+        self.width = 1.0
+        self.xs = None
+        self.keff = 1.0
+        self.fis_src = 1.0
+        if(xs):
+            self.set_xs(xs)
+
+    def set_xs(self, val):
+        self.xs = val
+
+    def set_keff(self, val):
+        self.keff = val
+
+    def set_width(self, val):
+        self.width = val
+            
+    def get_flux(self):
+        return self.flux
+
+    def set_jin(self, dir, val):
+        self.jin[dir] = val
+
+    def get_jin(self, dir):
+        return self.jin[dir]
+
+    def get_jout(self, dir):
+        return self.jout[dir]
+
+    def get_xs(self):
+        return self.xs
+
+    def get_width(self):
+        return self.width
+
+    def get_fis_src(self):
+        return self.fis_src
+
+    def calc_fis_src(self):
+        # fission source
+        self.fis_src = self.xs.nusigf() * self.flux * self.width
+
+    def normalize_fis_src(self, factor):
+        self.fis_src *= factor
+
+    def calc(self):
+        #flux by Eq(28)
+        coef1 = 2.0*self.xs.dif() / self.width
+        coef2 = 2.0*coef1
+        coef3 = 1.0 + coef2
+        f_nume = coef1 * 4.0 * (self.jin[XP] + self.jin[XM]) + \
+                 coef3 * self.fis_src / self.keff
+        f_deno = coef2 + coef3*self.xs.siga()*self.width
+        self.flux = f_nume / f_deno
+
+        #net current by Eq(29)
+        jnet_XM  = -coef1 * (4.0*self.jin[XM] - self.flux) / coef3
+        jnet_XP = -coef1 * (4.0*self.jin[XP] - self.flux) / coef3
+
+        #out-goinnt by Eq(30)
+        self.jout[XM]  = jnet_XM  + self.jin[XM]
+        self.jout[XP] = jnet_XP + self.jin[XP]
+
+    def debug(self):
+        print("-"*3 + " Node " + "-"*40)
+        print("  jin_XM \t", self.jin[XM] )
+        print("  jin_XP \t", self.jin[XP])
+        print("  jout_XM\t", self.jout[XM])
+        print("  jout_XP\t", self.jout[XP])
+        print("  flux   \t", self.flux)
+        print("  keff   \t", self.keff)
+        self.xs.debug()
+        print("-"*50)
+
+
+if __name__ == '__main__':
+    node = Node()
+    xs = CrossSection()
+    xs.set_d(1.0)
+    xs.set_siga(2.0)
+    xs.set_nusigf(3.0)
+    node.set_xs(xs)
+    node.debug()
+```
 
 
 ### Step5: Contaierクラスの新設
 
+さて、テストコードを書くことの3番目のメリットとして下記のものを挙げていたが、覚えているだろうか？
+
+---
+- テストコードが上位層クラスにおけるメソッドのひな形になる
+
+---
+
+
+先ほどの Node クラスに対するテストコードは、計算実行に必要なほぼ完全なコードだと言える。これを上手くまとめることによって、Nodeクラスを取りまとめる上位層、ここでは Container クラスのメソッドとして再利用することができるのだ。
+
+この時、まずはこんな風にしたいな･･･というイメージを Container クラスのテストコードとして落とし込む。こんな感じだ。
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+from config import *
+from cross_section import CrossSection
+from node import Node
+from container import Container
+
+class ContainerTest(unittest.TestCase):
+
+    def test_container(self):
+
+        xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+        delta = 1.0
+        albedo = -1.0
+        geom = [{'xs':xs_fuel, 'width':100}]
+
+        cont = Container(geom, delta, albedo)
+        #cont.debug()
+
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-7
+        
+        for idx_outer in range(100):
+
+            total_fis_src = cont.get_total_fis_src()
+            norm_factor = 1.0 / (total_fis_src/keff)
+            cont.normalize_fis_src(norm_factor)
+
+            for idx_inner in range(4):
+                for color in range(2):
+                    cont.calc(color)
+        
+            cont.calc_fis_src()
+
+            total_fis_src = cont.get_total_fis_src()
+            
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+            diff = abs((keff - keff_old)/keff)
+            #print( keff, diff)
+            if(diff < conv):
+                break
+            keff_old = keff
+            total_fis_src_old = total_fis_src
+
+            cont.set_keff(keff)
+
+
+        kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
+        #print( 'kana = ', kana)
+        self.assertAlmostEqual(keff, kana, places=4)
+
+
+        flux = cont.get_flux_dist()
+        self.assertEqual(len(flux), 2)  # x, y
+        self.assertEqual(len(flux[0]), int(geom[0]['width']/delta))
+        self.assertEqual(flux[0][0], delta/2.0)
+        self.assertEqual(flux[0][-1], geom[0]['width']-delta/2.0)
+        self.assertEqual(len(flux[1]), int(geom[0]['width']/delta))
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+コードがかなりすっきりして、全体がすぐに見渡せる程度になってきた。
+
+Containerクラスの定義は次のような感じだ。
+
+```Python
+import numpy as np
+
+from node import *
+from cross_section import *
+
+
+class Container:
+    """
+        ノードオブジェクトを保持し体系を構築する
+    """
+    def __init__(self, geometry, delta=1.0, albedo=0.0):
+        self._setup(geometry, delta, albedo)
+
+    def _setup(self, geometry, delta, albedo):
+        self.nodes = []
+        for r in geometry:
+            for k in range(int(r['width']/delta)):
+                the_node = Node(r['xs'])
+                the_node.set_width(delta)
+                self.nodes.append(the_node)
+
+        self.delta = delta
+        self.albedo = albedo
+
+    def calc(self, color=None):
+        for ix in range(color, len(self.nodes), 2):
+            if(ix==0):
+                jin_xm = self.albedo * self.nodes[ix].get_jout(XM)
+            else:
+                jin_xm = self.nodes[ix-1].get_jout(XP)
+                    
+            if(ix==len(self.nodes)-1):
+                jin_xp = self.albedo * self.nodes[ix].get_jout(XP)
+            else:
+                jin_xp = self.nodes[ix+1].get_jout(XM)
+
+            self.nodes[ix].set_jin(XM, jin_xm)
+            self.nodes[ix].set_jin(XP, jin_xp)
+            self.nodes[ix].calc()
+
+    def calc_fis_src(self):
+        for the_node in self.nodes:
+            the_node.calc_fis_src()
+
+    def get_total_fis_src(self):
+        total_fis_src = 0.0
+        for the_node in self.nodes:
+            total_fis_src += the_node.get_fis_src()
+        return total_fis_src
+
+    def normalize_fis_src(self, factor):
+        for the_node in self.nodes:
+            the_node.normalize_fis_src(factor)
+
+    def set_keff(self, keff):
+        for the_node in self.nodes:
+            the_node.set_keff(keff)            
+
+    def get_flux_dist(self):
+        x_pos = []
+        x_sum = 0.0
+        flux = []
+        for the_node in self.nodes:
+            w = the_node.get_width()
+            x_pos.append( x_sum + w/2 )            
+            x_sum += w
+            flux.append( the_node.get_flux() )
+        return [x_pos, flux]
+
+
+    def debug(self):
+        print("nodes: ", len(self.nodes))
+        for the_node in self.nodes:
+            the_node.debug()
+```
+
 
 ### Step6: ContainerControllerクラスの新設
 
+さて、Container クラスのテストコードをもう一段階上のレベルに引き上げてみよう。そう、ContainerController の登場だ。
+
+例のごとく、テストコードを先に書いてみる。(test_container_controller.py)
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+
+from config import *
+from cross_section import CrossSection
+from node import Node
+from container import Container
+from container_controller import ContainerController
+
+
+class ContainerContainerTest(unittest.TestCase):
+
+    def test_container_controller(self):
+
+        xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+        delta = 1.0
+        albedo = -1.0
+        geom = [{'xs':xs_fuel, 'width':100}]
+
+        container = Container(geom, delta, albedo)
+        #cont.debug()
+        
+        controller = ContainerController(container)
+        
+        controller.calc()
+
+        keff = controller.get_keff()
+
+        kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
+        #print( 'kana = ', kana)
+        self.assertAlmostEqual(keff, kana, places=4)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+ブラボー！　非常にすっきりしている！！
+
+いや、まだこれはテストコードだ。このコードが動くように ContainerController 本体を書くんだ！！
+
+```Python
+class ContainerController:
+    """
+    Container オブジェクトを操作し、外側反復計算を行う。
+    """
+
+    def __init__(self, container=None):
+        self.cont = container
+        self.keff = 1.0
+        self.keff_old = 1.0
+        self.total_fis_src_old = 1.0
+        self.conv_criterion = 1.0E-7
+        self.max_outer_iterations = 100000
+        self.inner_iterations = 4
+        self.converged = False
+
+
+    def calc(self):
+        for idx_outer in range(self.max_outer_iterations):
+            
+            self.total_fis_src = self.cont.get_total_fis_src()
+            norm_factor = 1.0 / (self.total_fis_src/self.keff)
+            self.cont.normalize_fis_src(norm_factor)
+
+            for idx_inner in range(self.inner_iterations):
+                for color in range(2):
+                    self.cont.calc(color)
+                
+                self.cont.calc_fis_src()
+                
+            self.total_fis_src = self.cont.get_total_fis_src()
+
+            self.keff = self.total_fis_src / (self.total_fis_src_old/self.keff_old)
+            diff = abs((self.keff - self.keff_old)/self.keff)
+
+            #print(self.keff, diff)
+
+            if(diff < self.conv_criterion):
+                self.converged = True
+                break
+
+            self.keff_old = self.keff
+            self.total_fis_src_old = self.total_fis_src
+
+            self.cont.set_keff(self.keff)
+        
+        return (idx_outer, self.converged)
+
+
+    def get_keff(self):
+        return self.keff
+```
 
 ### Step7: CalculationManagerクラスの新設
 
+よし、あと一歩だ。
+
+ContainerController のテストコードをもう一段間上のレベルに引き上げよう。こんな感じだ！
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+from cross_section import CrossSection
+from node import Node
+from container import Container
+from container_controller import ContainerController
+from calculation_manager import CalculationManager
+
+class CalculationManagerTest(unittest.TestCase):
+
+    def test_calculation_manager(self):
+
+        xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+        delta = 1.0
+        albedo = -1.0
+        geom = [{'xs':xs_fuel, 'width':100}]
+
+        config = { 'geometry':geom, 'mesh_width':delta, "albedo": albedo}
+                
+        calc_man = CalculationManager(config)
+        calc_man.run()
+
+        keff = calc_man.get_keff()
+
+        kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
+        #print( 'kana = ', kana)
+        self.assertAlmostEqual(keff, kana, places=4)
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+ここまで来たら非常に分かりやすいし、取り扱いが非常に楽になる。
+
+ということで、このテストが通るように CalculationManager の本体を実装しよう。
+
+```Python
+from container import Container
+from container_controller import ContainerController
+
+
+class CalculationManager:
+    """
+        計算の全体制御
+    """
+
+    def __init__(self, param):
+        geom = param['geometry']
+        delta = param['mesh_width']
+        albedo = param['albedo']
+
+        container = Container(geom, delta, albedo)
+        self.controller = ContainerController(container)
+
+    def run(self):
+        self.controller.calc()
+
+    def get_keff(self):
+        return self.controller.get_keff()
+
+```
+
+今度は結構短いな･･･。これで一通りのコーディングは完了した。
+
+テストが通ることを確認したら、リポジトリにコミットしておこう。
+
 
 ### Final: 完成
+
+
+
 
 
 ## 2群計算への拡張

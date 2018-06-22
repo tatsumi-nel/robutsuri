@@ -18,10 +18,12 @@ class NodeTest(unittest.TestCase):
         node.set_keff( xs.nusigf() / xs.siga() )    
         node.calc()
 
-        for k in range(100):
+        for k in range(1000):
+            jout_xm = node.get_jout(XM)
+            jout_xp = node.get_jout(XP)
+            node.set_jin(XM, jout_xm)
+            node.set_jin(XP, jout_xp)
             node.calc()
-
-        node.debug()
 
         self.assertEqual(node.get_jout(XM), node.get_jout(XP))
         self.assertEqual(node.get_jin(XM), node.get_jout(XM))
@@ -41,19 +43,32 @@ class NodeTest(unittest.TestCase):
                 the_node.set_width(delta)
                 nodes.append(the_node)
         
+        keff = 1.0
         keff_old = 1.0
-        pro_old = 1.0
+        total_fis_src_old = 1.0
         conv = 1.0e-7
+
         for ik in range(2000):  # outer iteration
 
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # normalize fis src to make total fis src unity
+            norm_factor = 1.0 / (total_fis_src/keff)
+            for the_node in nodes:
+                the_node.normalize_fis_src(norm_factor)
+
+            # inner iteration with fixed fis src
             for istart in range(2):  # start color (0: red, 1:black)
                 for ix in range(istart, len(nodes), 2):
-                    if(ix==0):
+                    if(ix==0):  # left boundary
                         jin_xm = -nodes[ix].get_jout(XM)
                     else:
                         jin_xm = nodes[ix-1].get_jout(XP)
                     
-                    if(ix==len(nodes)-1):
+                    if(ix==len(nodes)-1):  # right boundary
                         jin_xp = -nodes[ix].get_jout(XP)
                     else:
                         jin_xp = nodes[ix+1].get_jout(XM)
@@ -61,30 +76,34 @@ class NodeTest(unittest.TestCase):
                     nodes[ix].set_jin(XM, jin_xm)
                     nodes[ix].set_jin(XP, jin_xp)
                     nodes[ix].calc()
-
-            # red/black done
-            rr = CrossSection()
-            for the_node in nodes:
-                rr = rr + the_node.get_xs() * the_node.get_flux() * the_node.get_width()
             
-            #keff = rr.nusigf() / rr.siga()
-            keff = rr.nusigf() / (pro_old/keff_old)
+            # calculation of new fission source
+            for the_node in nodes:
+                the_node.calc_fis_src()
+            
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # estimation of eigen value as a ratio of generations
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+                                  
             diff = abs((keff - keff_old)/keff)
-            #print( keff, diff)
-            if(diff < conv):
-                break
-            keff_old = keff
-            pro_old = rr.nusigf()
+            #print( ik, keff, diff)
 
+            if(diff < conv):  
+                break
+
+            keff_old = keff
+            total_fis_src_old = total_fis_src
+
+            # set new eigen value to all the nodes
             for the_node in nodes:
                 the_node.set_keff(keff)
             
-        # debug
-        #print("flux")
-        #for ix in range(len(nodes)):
-        #    print(ix, nodes[ix].get_flux())
-    
-        
+
+        # reference as analytical solution
         kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
         #print( 'kana = ', kana)
         self.assertAlmostEqual(keff, kana, places=5)
@@ -103,19 +122,32 @@ class NodeTest(unittest.TestCase):
                 the_node.set_width(delta)
                 nodes.append(the_node)
         
+        keff = 1.0
         keff_old = 1.0
-        pro_old = 1.0
+        total_fis_src_old = 1.0
         conv = 1.0e-7
-        for ik in range(3000):  # outer iteration
 
-            for color in range(2):  # color (0: red, 1:black)
-                for ix in range(color, len(nodes), 2):
-                    if(ix==0):
+        for ik in range(2000):  # outer iteration
+
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # normalize fis src to make total fis src unity
+            norm_factor = 1.0 / (total_fis_src/keff)
+            for the_node in nodes:
+                the_node.normalize_fis_src(norm_factor)
+
+            # inner iteration with fixed fis src
+            for istart in range(2):  # start color (0: red, 1:black)
+                for ix in range(istart, len(nodes), 2):
+                    if(ix==0):  # left boundary
                         jin_xm = -nodes[ix].get_jout(XM)
                     else:
                         jin_xm = nodes[ix-1].get_jout(XP)
                     
-                    if(ix==len(nodes)-1):
+                    if(ix==len(nodes)-1):  # right boundary
                         jin_xp = -nodes[ix].get_jout(XP)
                     else:
                         jin_xp = nodes[ix+1].get_jout(XM)
@@ -123,24 +155,29 @@ class NodeTest(unittest.TestCase):
                     nodes[ix].set_jin(XM, jin_xm)
                     nodes[ix].set_jin(XP, jin_xp)
                     nodes[ix].calc()
-
-            # red/black done
-            rr = CrossSection()
-            for the_node in nodes:
-                rr = rr + the_node.get_xs() * the_node.get_flux() * the_node.get_width()
             
-            #keff = rr.nusigf() / rr.siga()
-            keff = rr.nusigf() / (pro_old/keff_old)
+            # calculation of new fission source
+            for the_node in nodes:
+                the_node.calc_fis_src()
+            
+            # calculation of total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                total_fis_src += the_node.get_fis_src()
+            
+            # estimation of eigen value as a ratio of generations
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+                                  
             diff = abs((keff - keff_old)/keff)
+            #print( ik, keff, diff)
 
-            #if( ik % 100 == 0):
-                #print( ik, keff, diff)
-
-            if(diff < conv):
+            if(diff < conv):  
                 break
-            keff_old = keff
-            pro_old = rr.nusigf()
 
+            keff_old = keff
+            total_fis_src_old = total_fis_src
+
+            # set new eigen value to all the nodes
             for the_node in nodes:
                 the_node.set_keff(keff)
             
@@ -149,8 +186,6 @@ class NodeTest(unittest.TestCase):
         #for ix in range(len(nodes)):
         #    print(ix, nodes[ix].get_flux())
 
-        #print("keff=",keff)
-        # self.assertAlmostEqual(keff, 1.41102, places=5)  # keff with strict condition
         self.assertAlmostEqual(keff, 1.41124, places=5)  # keff with strict condition
 
 if __name__ == '__main__':

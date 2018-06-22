@@ -6,7 +6,7 @@ sys.path.append('../lib')
 from node import Node
 from cross_section import CrossSection
 
-class NodeTest(unittest.TestCase):
+class CrossSectionTest(unittest.TestCase):
 
     def test_sets(self):
         xs = CrossSection()

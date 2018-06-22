@@ -37,6 +37,8 @@ class ContainerTest(unittest.TestCase):
             cont.normalize_fis_src(norm_factor)
 
             for kg in range(2):
+                cont.calc_scat_src(kg)
+
                 for idx_inner in range(4):
                     for color in range(2):
                         cont.calc(kg, color)
@@ -57,8 +59,8 @@ class ContainerTest(unittest.TestCase):
 
         b2 = (math.pi / geom[0]['width'])**2
         kana_nume = (xs.sigr(1) + xs.dif(1)*b2)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
-        kana_domi = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
-        kana = kana_nume / kana_domi
+        kana_deno = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
+        kana = kana_nume / kana_deno
         print("kana=", kana)
 
         self.assertAlmostEqual(keff, kana, places=4)

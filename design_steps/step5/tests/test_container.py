@@ -50,6 +50,7 @@ class ContainerTest(unittest.TestCase):
 
             cont.set_keff(keff)
 
+
         kana = xs_fuel.nusigf() / (xs_fuel.dif() * math.pi ** 2 / 100**2 + xs_fuel.siga())
         #print( 'kana = ', kana)
         self.assertAlmostEqual(keff, kana, places=4)

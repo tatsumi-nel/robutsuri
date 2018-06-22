@@ -50,31 +50,32 @@ class Node:
         return self.fis_src[kg]
 
     def calc_fis_src(self, kg):
-        # fission source
-        self.fis_src[kg] = self.xs.nusigf(kg) * self.flux[kg] * self.width
+        # fission source        
+        s_fis = 0.0
+        for kkg in range(self.xs.ng()):
+            s_fis += self.xs.xi(kg) * self.xs.nusigf(kkg)*self.flux[kkg]
+        self.fis_src[kg] = s_fis
+
+    def calc_scat_src(self, kg):
+        # scattering source
+        s_scat = 0.0
+        for kkg in range(self.xs.ng()):
+            if kg != kkg:
+                s_scat += self.xs.sigs(kkg, kg) * self.flux[kkg]
+        self.scat_src[kg] = s_scat
 
     def normalize_fis_src(self, kg, factor):
         self.fis_src[kg] *= factor
 
     def calc(self, kg):
-        # scattering source
-        s_scat = 0.0
-        for kkg in range(self.xs.ng()):
-            if kg != kkg:
-                s_scat += self.xs.sigs(kkg, kg) * self.flux[kkg] * self.width
-
-        # fission source        
-        s_fis = 0.0
-        for kkg in range(self.xs.ng()):
-            s_fis += self.xs.xi(kg) * self.fis_src[kkg] / self.keff 
-
         #flux by Eq(28)
         coef1 = 2.0*self.xs.dif(kg) / self.width
         coef2 = 2.0*coef1
         coef3 = 1.0 + coef2
-        f_nume = coef1 * 4.0 * (self.jin[kg, XP] + self.jin[kg, XM]) + coef3 * (s_fis + s_scat)
-        f_domi = coef2 + coef3*self.xs.sigr(kg)*self.width
-        self.flux[kg] = f_nume / f_domi
+        f_nume = coef1 * 4.0 * (self.jin[kg, XP] + self.jin[kg, XM]) + coef3 * \
+                (self.fis_src[kg]  / self.keff + self.scat_src[kg]) * self.width
+        f_deno = coef2 + coef3*self.xs.sigr(kg)*self.width
+        self.flux[kg] = f_nume / f_deno
 
         #net current by Eq(29)
         jnet_XM  = -coef1 * (4.0*self.jin[kg, XM] - self.flux[kg]) / coef3

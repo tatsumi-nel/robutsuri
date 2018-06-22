@@ -21,6 +21,8 @@ class ContainerController:
             self.cont.normalize_fis_src(norm_factor)
 
             for kg in range(self.cont.get_ng()):
+                self.cont.calc_scat_src(kg)
+
                 for idx_inner in range(self.inner_iterations):
                     for color in range(2):
                         self.cont.calc(kg, color)

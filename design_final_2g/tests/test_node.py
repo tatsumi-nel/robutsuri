@@ -33,7 +33,7 @@ class NodeTest(unittest.TestCase):
             # normalize total fission source
             total_fis_src = 0.0
             for kg in range(2):
-                total_fis_src += node.get_fis_src(kg)
+                total_fis_src += node.get_fis_src(kg) * node.get_width()
             factor = 1.0 / (total_fis_src/keff)
 
             for kg in range(2):
@@ -41,7 +41,9 @@ class NodeTest(unittest.TestCase):
 
             # energy loop
             for kg in range(2):
-                
+                # update sources
+                node.calc_scat_src(kg)
+
                 # inner loop
                 for i in range(4):
                     for dir in range(2):
@@ -50,17 +52,16 @@ class NodeTest(unittest.TestCase):
                     # calculate jout, flux with response matrix
                     node.calc(kg)
             
-                # update fission source
                 node.calc_fis_src(kg)
 
             # calc total fission source and k_eff
             total_fis_src = 0.0
             for kg in range(2):
-                total_fis_src += node.get_fis_src(kg)    
+                total_fis_src += node.get_fis_src(kg) * node.get_width()
                 
             keff = total_fis_src / (total_fis_src_old/keff_old)
             diff = abs((keff - keff_old)/keff)
-
+            
             # convergence check
             if(diff < conv):
                 break
@@ -75,8 +76,8 @@ class NodeTest(unittest.TestCase):
         print("keff=", keff)
 
         kana_nume = xs.sigr(1)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
-        kana_domi = xs.sigr(0) * xs.sigr(1)
-        kana = kana_nume / kana_domi
+        kana_deno = xs.sigr(0) * xs.sigr(1)
+        kana = kana_nume / kana_deno
         print("kana=", kana)
 
         self.assertAlmostEqual(keff, kana, places=5)
@@ -118,7 +119,7 @@ class NodeTest(unittest.TestCase):
             total_fis_src = 0.0
             for the_node in nodes:
                 for kg in range(2):
-                    total_fis_src += the_node.get_fis_src(kg)
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()
             factor = 1.0 / (total_fis_src/keff)
 
             for the_node in nodes:
@@ -127,6 +128,10 @@ class NodeTest(unittest.TestCase):
 
             # energy loop
             for kg in range(2):
+
+                # update scattering source
+                for the_node in nodes:
+                    the_node.calc_scat_src(kg)
 
                 # inner loop
                 for i in range(4):
@@ -158,12 +163,12 @@ class NodeTest(unittest.TestCase):
             total_fis_src = 0.0
             for the_node in nodes:
                 for kg in range(2):
-                    total_fis_src += the_node.get_fis_src(kg)    
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()   
                 
             keff = total_fis_src / (total_fis_src_old/keff_old)
             diff = abs((keff - keff_old)/keff)
-            
-            # print( keff, diff)
+            # print( keff, diff)            
+
             # convergence check
             if(diff < conv):
                 break
@@ -187,8 +192,8 @@ class NodeTest(unittest.TestCase):
         b2 = (math.pi / geom[0]['width'])**2
 
         kana_nume = (xs.sigr(1) + xs.dif(1)*b2)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
-        kana_domi = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
-        kana = kana_nume / kana_domi
+        kana_deno = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
+        kana = kana_nume / kana_deno
         print("kana=", kana)
 
         self.assertAlmostEqual(keff, kana, places=4)
@@ -230,7 +235,7 @@ class NodeTest(unittest.TestCase):
             total_fis_src = 0.0
             for the_node in nodes:
                 for kg in range(2):
-                    total_fis_src += the_node.get_fis_src(kg)
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()
             factor = 1.0 / (total_fis_src/keff)
 
             for the_node in nodes:
@@ -239,6 +244,10 @@ class NodeTest(unittest.TestCase):
 
             # energy loop
             for kg in range(2):
+
+                # update scattering source
+                for the_node in nodes:
+                    the_node.calc_scat_src(kg)
 
                 # inner loop
                 for i in range(4):
@@ -270,7 +279,7 @@ class NodeTest(unittest.TestCase):
             total_fis_src = 0.0
             for the_node in nodes:
                 for kg in range(2):
-                    total_fis_src += the_node.get_fis_src(kg)    
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()  
                 
             keff = total_fis_src / (total_fis_src_old/keff_old)
             diff = abs((keff - keff_old)/keff)

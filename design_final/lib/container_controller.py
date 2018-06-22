@@ -25,7 +25,7 @@ class ContainerController:
                 for color in range(2):
                     self.cont.calc(color)
                 
-                self.cont.calc_fis_src()
+            self.cont.calc_fis_src()
                 
             self.total_fis_src = self.cont.get_total_fis_src()
 
