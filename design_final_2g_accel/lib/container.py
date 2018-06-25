@@ -21,6 +21,7 @@ class Container:
         self.ng = self.nodes[0].get_xs().ng()
         self.change_ratio_old = 1.0
         self.max_diff_old = 1.0
+        self.asymptotic_criteria = 0.0
 
     def get_ng(self):
         return self.ng
