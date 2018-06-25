@@ -27,7 +27,7 @@ class CalculationManagerTest(unittest.TestCase):
         config = { 'geometry':geom, 'mesh_width':delta, "albedo": albedo}
                 
         calc_man = CalculationManager(config)
-        calc_man.run()
+        count, flag = calc_man.run()
 
         keff = calc_man.get_keff()
 
