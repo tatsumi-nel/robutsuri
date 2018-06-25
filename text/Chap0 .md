@@ -1,3 +1,67 @@
+<style>
+/* 吹き出し本体 */
+.balloon1{
+  position: relative;
+  padding: 20px;
+  border-radius: 10px;
+  color: #ffffff;
+  background-color: #0888ff;
+  margin-left: 110px;          /* 左に余白を設ける */
+}
+/* 画像 - 絶対配置で左上に配置 */
+.balloon1 .icon{
+  position: absolute;
+  left: -110px;
+  top: 0;
+}
+
+/* 三角アイコン */
+.balloon1::before{
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  left: -15px;
+  top: 20px;
+  border-right: 15px solid #0888ff;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+}
+
+/* 吹き出し本体 */
+.balloon2{
+  position: relative;
+  padding: 20px;
+  border-radius: 10px;
+  color: #ffffff;
+  background-color: #ff9030;
+  margin-right: 110px;          /* 右に余白を設ける */
+}
+
+/* 画像 - 絶対配置で右上に配置 */
+.balloon2 .icon, .baloon22 .icon{
+  position: absolute;
+  right: -110px;
+  top: 0;
+op: 0;
+}
+
+/* 三角アイコン */
+.balloon2::before{
+  content: '';
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  right: -15px;
+  top: 20px;
+  border-left: 15px solid #ff9030;
+  border-top: 15px solid transparent;
+  border-bottom: 15px solid transparent;
+}
+</style>    
+
 # プロローグ
 今回、なぜプログラミングがテーマの一つになったのか･･･。そして、何故、講師を引き受けることになってしまったのか･･･。
 
@@ -6,11 +70,21 @@
 
 時は2017年秋。北海道大学工学部で日本原子力学会秋の大会が開催され、筆者も参加していた。現地委員をされていた某C先生は忙しそうにしていたが、少し時間がとれそうということで、とある教室にて雑談をしていたところ、急転直下、つぎのようなネタフリがあった。
 
-　　　「次の炉物理夏期セミナーは北大が幹事なんですが、何か良いアイデアは無いですかね～？」
+
+<div class="balloon1" style="margin-top:2em; margin-bottom:2em;">
+  <div class="icon"><img src="https://4.bp.blogspot.com/-dzDIvDO6pY0/V-Nn4U9fhYI/AAAAAAAA-DQ/1oq7TpFspDMEC2P4iVFyDN_lt5h8IQh3QCLcB/s800/shinpai_man.png" width=80></div>
+次の炉物理夏期セミナーは北大が幹事なんですが、何か良いアイデアは無いですかね～？
+</div>
+
 
 そう聞かれたものだから、ついつい後先考えず、こんなことを口走ってしまった。
 
-　　　「そうですね～。どうせなら、ワークショップ形式で、実践しながら学ぶとかいうのはどうでしょう？例えばプログラミングとか･･･」
+
+<div class="balloon2" style="margin-top:2em; margin-bottom:2em;">
+  <div class="icon">   <img src="https://1.bp.blogspot.com/-rBFzjQbEFj4/VhB9jvnHAmI/AAAAAAAAyzs/R1Dwa7c5l78/s800/businessman_dekiru.png" width=80></div>
+そうですね～。どうせなら、ワークショップ形式で、実践しながら学ぶとかいうのはどうでしょう？例えばプログラミングとか･･･
+</div>
+
 
 というのも、その夏にあった炉物理夏期セミナーでも講師として参加していたのだが、その時にあったワークショップ的な取り組みがなかなか良かったので、その印象が残っていた。ワークショップ形式にすれば、もっと踏み込んだことが出来るのではないか･･･と漠然と思っていたのだった。
 
@@ -18,14 +92,22 @@
 
 そんなこともあり、以前からもやもやと頭の中にあった「プログラミングのスキルを皆が持てば、もっと生産性が上がるのに・・・」という気持ちから、つい口走ってしまった。しかし、その瞬間、C先生の目がキラリと光った（ような気がした）。
 
-　　　「プログラミング、それいいですね！　夏期セミナーは第50回目の記念すべき回ということで、お願いします。ね、巽さん！」
-   
-　　　「へっ！？」
+<div class="balloon1" style="margin-top:2em; margin-bottom:2em;">
+  <div class="icon"><img src="https://3.bp.blogspot.com/-p_KqddGXvs4/WBsAzQLBubI/AAAAAAAA_V8/ysrybUP7twsg1CHN_fqlNrPu3lvvbei_wCLcB/s800/pose_kiri_man.png" width=80></div>
+プログラミング、それいいですね！　夏期セミナーは第50回目の記念すべき回ということで、お願いします。ね、巽さん！
+</div>
+
+
+
+<div align="center" style="margin-top:2em; margin-bottom:2em; font-size:x-large">
+What !? <br>
+<img src="https://1.bp.blogspot.com/-taHssD3GT4Y/VfS6eeT5FGI/AAAAAAAAxQ4/ij8M8Zaofdc/s800/mokuhyou_mitatsu_man.png" width=200px>
+</div>
 
 C先生の持ち前の~~強引さ~~リーダーシップで、あっという間に~~丸め込まれた~~話がまとまった。
 
 
-そんなわけで、過去の炉物理夏期セミナーで初めての試みである、プログラミング演習をすることになった次第である。
+そんなわけで、過去の炉物理夏期セミナーで初めての試みである(と思われる）、プログラミング演習をすることになった次第である。
 
 
 ## 期待される効果・効能
@@ -61,7 +143,9 @@ C先生の持ち前の~~強引さ~~リーダーシップで、あっという間
 
 ここはものすごく大事なので、もう一回言っておこう。
 
-**「速さ」ではなく「早さ」である。**
+<div align="center" style="margin:1em">
+<strong>「速さ」ではなく「早さ」である。</strong>
+</div>
 
 つまり、計算機の性能を極限まで引き出すことを目的とするのではなく、**短時間に正確に目的を達成するかに重点を置く**ことにする。
 

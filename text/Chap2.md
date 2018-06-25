@@ -797,19 +797,24 @@ git commit -m "initial import"
 ---
 #### 応答行列法を用いた拡散方程式の解法
 
-1. 着目メッシュ $i$ に対する入射中性子流 $j^-_{i\pm1/2}$ を既知とする。
+1. 着目メッシュ <img src="https://latex.codecogs.com/gif.latex?\inline&space;i" /> に対する入射中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;j^-_{i\pm1/2}" /> を既知とする。
 
-2. 以下の式を用いてメッシュ $i$ における平均中性子束 $\phi_i$ を計算する。
+2. 以下の式を用いてメッシュ <img src="https://latex.codecogs.com/gif.latex?\inline&space;i" /> における平均中性子束 <img src="https://latex.codecogs.com/gif.latex?\inline&space;\phi_i" />  を計算する。
 
-$$ \{\frac{4 D}{\Delta x} + (1 + \frac{4 D}{\Delta x}) \Sigma_{a,i} \} \phi_i = \frac{2D}{\Delta x}(4 J^-_{i+1/2} + 4 J^-_{i-1/2})+(1+\frac{4D}{\Delta x})\Delta S_i$$ (28)
+<div align="center" style="margin-bottom:1em">
+<img src="https://latex.codecogs.com/gif.latex?\{\frac{4 D}{\Delta x} + (1 + \frac{4 D}{\Delta x}) \Sigma_{a,i} \} \phi_i = \frac{2D}{\Delta x}(4 J^-_{i+1/2} + 4 J^-_{i-1/2})+(1+\frac{4D}{\Delta x})\Delta S_i" width=80%/>
+</div>
 
-3. 入射中性子流 $J^-_{i\pm 1/2}$ とノード平均中止子束 $\phi_i$ から、境界における中性子流 $J_{i\pm 1/2}$ を以下の式で計算する。
+3. 入射中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J^-_{i\pm 1/2}" /> とノード平均中止子束 <img src="https://latex.codecogs.com/gif.latex?\inline&space;\phi_i" /> から、境界における中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J_{i\pm 1/2}" /> を以下の式で計算する。
 
-$$ J_{i\pm 1/2} = \frac{-\frac{2D}{\Delta x}(4 J^-_{i\pm 1/2}-\phi_i)}{(1+\frac{4D}{\Delta x})}$$ (29)
+<div align="center" style="margin-bottom:1em">
+<img src="https://latex.codecogs.com/gif.latex?J_{i\pm 1/2} = \frac{-\frac{2D}{\Delta x}(4 J^-_{i\pm 1/2}-\phi_i)}{(1+\frac{4D}{\Delta x})}" />
+</div>
 
-4. 入射中性子流 $J^-_{i\pm 1/2}$ と中性子流 $J_{i\pm 1/2}$ から、放出中性子流 $J^+_{i\pm 1/2}$ を以下の式で計算する。
+4. 入射中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J^-_{i\pm 1/2}" /> と中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J_{i\pm 1/2}" /> から、放出中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J^+_{i\pm 1/2}" /> を以下の式で計算する。
 
-$$ J^+_{i\pm 1/2} = J_{i\pm 1/2} + J^-_{i\pm 1/2}$$ (30)
+<div align="center" style="margin-bottom:1em">
+<img src="https://latex.codecogs.com/gif.latex?J^+_{i\pm 1/2} = J_{i\pm 1/2} + J^-_{i\pm 1/2}" />
 ---
 
 上記の解法を calc メソッドに実装し、他のメソッドも準備したものが次のコードだ。
@@ -1263,11 +1268,858 @@ class CalculationManager:
 
 ### Final: 完成
 
+これでいよいよ完成だ。最終的にできあがった計算コードは次のようになる。
 
 
+```Python
+import sys
 
+sys.path.append('lib')
+from calculation_manager import CalculationManager
+from cross_section import CrossSection
+
+xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+delta = 1.0
+albedo = -1.0
+geom = [{'xs':xs_fuel, 'width':100}]
+
+config = { 'geometry':geom, 'mesh_width':delta, "albedo": albedo}
+        
+calc_man = CalculationManager(config)
+calc_man.run()
+
+keff = calc_man.get_keff()
+
+print ("keff = ", keff)
+```
+
+もう気づいたと思うが、実はこれは CalculatiomNanager のテストコードそのものだ。
+
+今まで書いてきた部分は、いわゆる計算カーネル (claculation kernel) と言うべき中心的部分だ。実際の計算コードでのでは、計算カーネルはむしろ20%程度で、入出力とそれに関わるエラーチェックが80%程度を占めるといっても過言では無い。本講義での目的は、プログラミングの方法論の根幹部分について議論することである。したがって、入出力等の補助的な部分については割愛するが、ニーズに応じて読者の自学自習に期待したい。
+
+
+ここまでにおいて、CrossSection クラスや Node クラスといった基本的なクラスの定義やテストコードの作成から始まり、徐々に上位の階層におけるテストコードの作成を通じて、最終目的である計算コードの作成にたどり着くことが出来た。
+
+もちろん、必ずしも常にボトムアップでスムーズに開発出来るとは限らない。上位層の設計・実装が思惑通り行かず、階層の設計・実装をやり直すということは良くあることである。多かれ少なかれ試行錯誤は発生するだろうが、経験をつんで自分なりの定石のパターンを築き上げれば、手戻りは少なくなって行くであろう。
+
+また、理論編でも述べたように、デザインパターン、アルゴリズム、実装テクニックについては、書籍や他のソースコードをたくさん読むことにより効果的に学ぶことが出来るので、是非ともチャレンジして欲しい。
+
+
+### 演習問題
+
+#### 1. 裸の原子炉における中性子束分布 (零中性子束境界条件)
+
+完成した計算コードで求めた中性子束分布をプロットさせてみよう。中性子束分布は、Container オブジェクトにおける get_flux_dist メソッドで下記のように取得できるようにしたい。
+
+
+```Python
+flux_dist = calc_man.controller.container.get_flux_dist()
+```
+
+戻り値として、下記のような2次元リストを返すように設定すること。
+
+~~~
+[[0.5,
+  1.5,
+  ...
+  98.5,
+  99.5],
+ [0.012688756616239107,
+  0.038053732231784085,
+  ...
+  0.03806177262712973,
+  0.012691395758198915]]
+  ~~~
+
+下記のコードを用いて、得られた中性子束を Jupyter Notebook で可視化してみよう。
+
+```Python
+%matplotlib notebook
+import matplotlib.pyplot as plt
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+ax.plot(flux_dist[0], flux_dist[1])
+plt.show()
+```
+
+#### 2. 反射体付き原子炉における実効増倍率と中性子束分布
+
+厚さ60cmの燃料の両端に厚さ30cmの軽水反射体が配置されている1次元平板原子炉を考えて、その実効増倍率と中性子束分布を可視化してみよう。なお、断面積は下記のものを用いること。
+
+```Python
+xs_fuel = CrossSection([1.36, 0.0181, 0.0279])
+xs_ref  = CrossSection([0.55, 0.0127, 0.0])
+```
 
 ## 2群計算への拡張
+
+前節では1群計算を対象としていたが、これを2群計算に拡張してみよう。以下に1群計算と2群計算の違いをまとめる。
+
++ 断面積について
+    - エネルギー群数が2倍 (引数kgの追加）
+    - 核分裂スペクトルの取り扱い
+    - 散乱マトリクスの取り扱い
++ 収束計算
+    - エネルギー群による反復計算
+    - 散乱中性子源の計算
+
+
+各クラスのテストコードと実装を以下に示す。
+
+### CrossSectionクラスのテストコード
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+
+from node import Node
+from cross_section import CrossSection
+
+class NodeTest(unittest.TestCase):
+
+    def test_sets(self):
+        xs = CrossSection()
+        xs.set_d(0, 1.0)
+        xs.set_siga(0, 2.0)
+        xs.set_nusigf(0, 3.0)
+        xs.set_xi(0, 1.0)
+        xs.set_d(1, 11.0)
+        xs.set_siga(1, 12.0)
+        xs.set_nusigf(1, 13.0)
+        xs.set_xi(1, 0.0)
+        xs.set_smat([[1.0, 2.0],[3.0, 4.0]])
+        #   sm(kg, kkg)
+        # 
+        #             kkg
+        #           0     1
+        #   kg 0   1.0   2.0
+        #      1   3.0   4.0
+
+        self.assertEqual(xs.dif(0), 1.0)
+        self.assertEqual(xs.siga(0), 2.0)
+        self.assertEqual(xs.nusigf(0), 3.0)
+        self.assertEqual(xs.xi(0), 1.0)
+        self.assertEqual(xs.dif(1), 11.0)
+        self.assertEqual(xs.siga(1), 12.0)
+        self.assertEqual(xs.nusigf(1), 13.0)
+        self.assertEqual(xs.xi(1), 0.0)
+        self.assertEqual(xs.sigs(0,0), 1.0)
+        self.assertEqual(xs.sigs(0,1), 2.0)
+        self.assertEqual(xs.sigs(1,0), 3.0)
+        self.assertEqual(xs.sigs(1,1), 4.0)        
+
+    def test_sets3(self):
+        xs1 = CrossSection()
+        xs1.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs1.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+        xs1_ref = CrossSection()
+        xs1_ref.set(xs1)
+        self.assertEqual(xs1, xs1_ref)
+    
+    def test_operation_add(self):
+        xs1 = CrossSection()
+        xs1.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs1.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+
+        xs2 = CrossSection()
+        xs2.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs2.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+
+        xs3 = xs1 + xs2
+
+        xs3_ref = CrossSection()
+        xs3_ref.set([[2.0, 4.0, 6.0, 2.0],[22.0, 24.0, 26.0, 0.0]])
+        xs3_ref.set_smat( [[2.0, 4.0], [6.0, 8.0]])
+
+        self.assertEqual(xs3, xs3_ref)
+
+    def test_operation_sub(self):
+        xs1 = CrossSection()
+        xs1.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs1.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+
+        xs2 = CrossSection()
+        xs2.set([[2.0, 4.0, 6.0, 2.0],[22.0, 24.0, 26.0, 0.0]])
+        xs2.set_smat( [[2.0, 4.0], [6.0, 8.0]])
+    
+        xs3 = xs2 - xs1
+
+        xs3_ref = CrossSection()
+        xs3_ref.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs3_ref.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+
+        self.assertEqual(xs3, xs3_ref)
+
+    def test_operation_mul(self):
+        xs1 = CrossSection()
+        xs1.set([[1.0, 2.0, 3.0, 1.0],[11.0, 12.0, 13.0, 0.0]])
+        xs1.set_smat( [[1.0, 2.0], [3.0, 4.0]])
+
+        xs2 = xs1 * 2.0
+
+        xs2_ref = CrossSection()
+        xs2_ref.set([[2.0, 4.0, 6.0, 2.0],[22.0, 24.0, 26.0, 0.0]])
+        xs2_ref.set_smat( [[2.0, 4.0], [6.0, 8.0]])
+
+        self.assertEqual(xs2, xs2_ref)
+
+        xs3 = 2.0 * xs1
+        xs3_ref = xs2_ref
+        self.assertEqual(xs3, xs3_ref)
+
+        xs4 = 2.0 * xs1 * 3.0
+        xs4_ref = CrossSection()
+        xs4_ref.set([[6.0, 12.0, 18.0, 6.0],[66.0, 72.0, 78.0, 0.0]])
+        xs4_ref.set_smat( [[6.0, 12.0], [18.0, 24.0]])
+        xs4.debug()
+        xs4_ref.debug()
+
+        self.assertEqual(xs4, xs4_ref)
+
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### CrossSectionクラスの実装
+
+```Python
+import numpy as np
+import copy
+
+# 大域変数
+N_REACT = 5  # D, Siga, nuSigf, Xi, sigr
+DIF    = 0
+SIGA   = 1
+NUSIGF = 2
+XI     = 3
+SIGR   = 4
+
+class CrossSection:
+    """
+    断面積クラス (2群)
+    """
+
+    def __init__(self, val=None, ng=2):
+        """
+        コンストラクタ
+        """
+        self.x  = np.zeros((ng, N_REACT))
+        self.sm = np.zeros((ng, ng))
+        if not (val is None):
+            self.set(val)
+
+    def set(self, val):
+        if type(val) == CrossSection:
+            self.x = copy.copy(val.x)
+            self.sm = copy.copy(val.sm)
+        else: # リストの場合
+            for kg in range(self.ng()):
+                for i in range(len(val[kg])):
+                    self.x[kg, i] = val[kg][i]
+
+    def set_d(self, kg, val):
+        self.x[kg, DIF] = val
+
+    def set_siga(self, kg, val):
+        self.x[kg, SIGA] = val
+
+    def set_nusigf(self, kg, val):
+        self.x[kg, NUSIGF] = val
+
+    def set_xi(self, kg, val):
+        self.x[kg, XI] = val
+
+    def set_smat(self, mat):
+        for kg in range(self.ng()):
+            for i in range(self.ng()):
+                self.sm[kg, i] = mat[kg][i]
+
+    def calc_sigr(self):
+        for kg in range(self.ng()):
+            self.x[kg, SIGR] = self.x[kg, SIGA]
+            for kkg in range(self.ng()):
+                if kg != kkg:
+                    self.x[kg, SIGR] += self.sm[kg,kkg]
+
+    def ng(self):
+        return self.x.shape[0]
+
+    def dif(self, kg):
+        return self.x[kg, DIF]
+
+    def siga(self, kg):
+        return self.x[kg, SIGA]
+
+    def sigr(self, kg):
+        return self.x[kg, SIGR]    
+
+    def nusigf(self, kg):
+        return self.x[kg, NUSIGF]
+    
+    def xi(self, kg):
+        return self.x[kg, XI]
+
+    def sigs(self, kg, kkg):
+        return self.sm[kg, kkg]
+
+    def __eq__(self, other):
+        return np.allclose(self.x, other.x) and np.allclose(self.sm, other.sm)
+            
+    def __mul__(self, factor):
+        # ここで val は float であることを前提とする
+        xs = CrossSection(self)
+        xs.x *= factor
+        xs.sm *= factor
+        return xs
+
+    def __rmul__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= factor
+        xs.sm *= factor
+        return xs
+
+    def __truediv__(self, factor):
+        xs = CrossSection(self)
+        xs.x *= (1.0/factor)
+        xs.sm *= (1.0/factor)
+        return xs
+
+    def __neg__(self):
+        return self * (-1.0)
+
+    def __add__(self, other):
+        xs = CrossSection(self)
+        xs.x += other.x
+        xs.sm += other.sm
+        return xs
+    
+    def __sub__(self, other):
+        xs = CrossSection(self) + (-other)
+        return xs
+    
+    def debug(self):
+        print("-" * 9 + " XS " + "-" * 29)
+        print("kg\tD\tSiga\tSigr\tNuSigf\tXi")
+        for kg in range(self.x.shape[0]):
+            print(kg, self.x[kg, DIF], self.x[kg, SIGA], self.x[kg, SIGR], self.x[kg, NUSIGF], self.x[kg, XI], sep='\t', end='\n')
+        print( "smat")
+        print( self.sm )
+        print("-"*42)
+```
+
+### Nodeクラスのテストコード
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+from config import *
+from cross_section import CrossSection
+from node import Node
+
+class NodeTest(unittest.TestCase):
+
+    def test_onenode(self):
+        node = Node()
+        xs = CrossSection()
+        
+        # two-group problem
+        xs.set([[1.58, 0.0032, 0.0, 1.0],[0.271, 0.0930, 0.168, 0.0]])
+        xs.set_smat( [[0.0, 0.0178], [0.0, 0.0]])
+        xs.calc_sigr()
+        
+        #xs.debug()
+        node.set_xs(xs)
+
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-10
+
+        # outer iteration        
+        for ik in range(1000):
+
+            # normalize total fission source
+            total_fis_src = 0.0
+            for kg in range(2):
+                total_fis_src += node.get_fis_src(kg) * node.get_width()
+            factor = 1.0 / (total_fis_src/keff)
+
+            for kg in range(2):
+                node.normalize_fis_src(kg, factor)                
+
+            # energy loop
+            for kg in range(2):
+                # update sources
+                node.calc_scat_src(kg)
+
+                # inner loop
+                for i in range(4):
+                    for dir in range(2):
+                        node.set_jin(kg, dir, node.get_jout(kg, dir))
+                    
+                    # calculate jout, flux with response matrix
+                    node.calc(kg)
+            
+                node.calc_fis_src(kg)
+
+            # calc total fission source and k_eff
+            total_fis_src = 0.0
+            for kg in range(2):
+                total_fis_src += node.get_fis_src(kg) * node.get_width()
+                
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+            diff = abs((keff - keff_old)/keff)
+            
+            # convergence check
+            if(diff < conv):
+                break
+            
+            # update parameters
+            total_fis_src_old = total_fis_src
+            keff_old = keff
+            node.set_keff(keff)
+        
+        # --- end of loop for outer iteration
+
+        print("keff=", keff)
+
+        kana_nume = xs.sigr(1)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
+        kana_deno = xs.sigr(0) * xs.sigr(1)
+        kana = kana_nume / kana_deno
+        print("kana=", kana)
+
+        self.assertAlmostEqual(keff, kana, places=5)
+
+        for kg in range(2):
+            self.assertAlmostEqual(node.get_jout(kg, XM), node.get_jout(kg, XP), places=5)
+            self.assertAlmostEqual(node.get_jin(kg, XM), node.get_jout(kg, XM), places=5)
+            self.assertAlmostEqual(node.get_jin(kg, XP), node.get_jout(kg, XP), places=5)
+            self.assertAlmostEqual(node.get_jout(kg, XM)+node.get_jin(kg, XM), node.get_flux(kg) / 2.0, places=5)
+    
+
+    def test_uniform_zeroflux_bc(self):
+        
+        xs = CrossSection()
+        xs.set([[1.58, 0.02, 0.0, 1.0],[0.271, 0.0930, 0.168, 0.0]])
+        xs.set_smat( [[0.0, 0.0178], [0.0, 0.0]])
+        xs.calc_sigr()
+
+        delta = 1.0
+        geom = [{'xs':xs, 'width':100}]
+
+        # geometry setting
+        nodes = []        
+        for r in geom:
+            for k in range(int(r['width']/delta)):
+                the_node = Node(r['xs'])
+                the_node.set_width(delta)
+                nodes.append(the_node)
+        
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-8
+        
+        # outer iteration
+        for ik in range(100):
+
+            # normalize total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                for kg in range(2):
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()
+            factor = 1.0 / (total_fis_src/keff)
+
+            for the_node in nodes:
+                for kg in range(2):
+                    the_node.normalize_fis_src(kg, factor)       
+
+            # energy loop
+            for kg in range(2):
+
+                # update scattering source
+                for the_node in nodes:
+                    the_node.calc_scat_src(kg)
+
+                # inner loop
+                for i in range(4):
+                    for istart in range(2):  # start color (0: red, 1:black)
+                        for ix in range(istart, len(nodes), 2):
+                        
+                            # pass partial currents to adjacent nodes
+                            if(ix==0):
+                                jin_xm = -nodes[ix].get_jout(kg, XM)
+                            else:
+                                jin_xm = nodes[ix-1].get_jout(kg, XP)
+                            
+                            if(ix==len(nodes)-1):
+                                jin_xp = -nodes[ix].get_jout(kg, XP)
+                            else:
+                                jin_xp = nodes[ix+1].get_jout(kg, XM)
+
+                            nodes[ix].set_jin(kg, XM, jin_xm)
+                            nodes[ix].set_jin(kg, XP, jin_xp)
+                            
+                            # calculate jout, flux with response matrix
+                            nodes[ix].calc(kg)
+                
+                # update fission source
+                for the_node in nodes:
+                    the_node.calc_fis_src(kg)
+
+            # calc total fission source and keff
+            total_fis_src = 0.0
+            for the_node in nodes:
+                for kg in range(2):
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()   
+                
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+            diff = abs((keff - keff_old)/keff)
+            # print( keff, diff)            
+
+            # convergence check
+            if(diff < conv):
+                break
+
+            # update parameters
+            total_fis_src_old = total_fis_src
+            keff_old = keff
+            for the_node in nodes:
+                the_node.set_keff(keff)
+
+        # --- end of loop for outer iterations
+
+        # converged
+        print("keff=", keff)
+
+        # debug
+        #print("fast flux")
+        #for ix in range(len(nodes)):
+        #    print(ix, nodes[ix].get_flux(0))
+
+        b2 = (math.pi / geom[0]['width'])**2
+
+        kana_nume = (xs.sigr(1) + xs.dif(1)*b2)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
+        kana_deno = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
+        kana = kana_nume / kana_deno
+        print("kana=", kana)
+
+        self.assertAlmostEqual(keff, kana, places=4)
+
+
+
+    def test_two_regions_zeroflux_bc(self):
+
+        xs_fuel = CrossSection()
+        xs_fuel.set([[1.58, 0.0032, 0.0, 1.0],[0.271, 0.0930, 0.168, 0.0]])
+        xs_fuel.set_smat( [[0.0, 0.0178], [0.0, 0.0]])
+        xs_fuel.calc_sigr()
+        
+        xs_ref = CrossSection()
+        xs_ref.set([[1.41, 0.0, 0.0, 1.0],[0.117, 0.0191, 0.0, 0.0]])
+        xs_ref.set_smat( [[0.0, 0.0476], [0.0, 0.0]])
+        xs_ref.calc_sigr()
+    
+        delta = 1.0
+        geom = [{'xs':xs_ref, 'width':30}, {'xs':xs_fuel, 'width':60}, {'xs':xs_ref, 'width':30} ]
+        
+        # geometry setting
+        nodes = []        
+        for r in geom:
+            for k in range(int(r['width']/delta)):
+                the_node = Node(r['xs'])
+                the_node.set_width(delta)
+                nodes.append(the_node)
+        
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-8
+        
+        # outer iteration
+        for ik in range(100):
+
+            # normalize total fission source
+            total_fis_src = 0.0
+            for the_node in nodes:
+                for kg in range(2):
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()
+            factor = 1.0 / (total_fis_src/keff)
+
+            for the_node in nodes:
+                for kg in range(2):
+                    the_node.normalize_fis_src(kg, factor)       
+
+            # energy loop
+            for kg in range(2):
+
+                # update scattering source
+                for the_node in nodes:
+                    the_node.calc_scat_src(kg)
+
+                # inner loop
+                for i in range(4):
+                    for istart in range(2):  # start color (0: red, 1:black)
+                        for ix in range(istart, len(nodes), 2):
+                        
+                            # pass partial currents to adjacent nodes
+                            if(ix==0):
+                                jin_xm = -nodes[ix].get_jout(kg, XM)
+                            else:
+                                jin_xm = nodes[ix-1].get_jout(kg, XP)
+                            
+                            if(ix==len(nodes)-1):
+                                jin_xp = -nodes[ix].get_jout(kg, XP)
+                            else:
+                                jin_xp = nodes[ix+1].get_jout(kg, XM)
+
+                            nodes[ix].set_jin(kg, XM, jin_xm)
+                            nodes[ix].set_jin(kg, XP, jin_xp)
+                            
+                            # calculate jout, flux with response matrix
+                            nodes[ix].calc(kg)
+                
+                # update fission source
+                for the_node in nodes:
+                    the_node.calc_fis_src(kg)
+
+            # calc total fission source and keff
+            total_fis_src = 0.0
+            for the_node in nodes:
+                for kg in range(2):
+                    total_fis_src += the_node.get_fis_src(kg) * the_node.get_width()  
+                
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+            diff = abs((keff - keff_old)/keff)
+            
+            # print( keff, diff)
+            # convergence check
+            if(diff < conv):
+                break
+
+            # update parameters
+            total_fis_src_old = total_fis_src
+            keff_old = keff
+            for the_node in nodes:
+                the_node.set_keff(keff)
+
+        # --- end of loop for outer iterations
+
+        # converged
+        print("keff=", keff)
+  
+        #print("flux")
+        #for ix in range(len(nodes)):
+        #   print(ix, nodes[ix].get_flux())
+
+        self.assertAlmostEqual(keff, 1.35826, places=5)  # keff with strict condition
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Nodeクラスの実装
+
+```Python
+import numpy as np
+
+from cross_section import *
+from config import *
+
+class Node:
+    def __init__(self, xs=None, kg=2):
+        self.jout = np.ones((kg,2))   # kg, out-going, [XM, XP]
+        self.jin  = np.ones((kg,2))   # kg, in-coming, [XM, XP]
+        self.flux  = np.ones(kg)      # average flux
+        self.width = 1.0
+        self.xs = None
+        self.keff = 1.0
+        self.fis_src = np.ones(kg)
+        self.scat_src = np.zeros(kg)
+        if(xs):
+            self.set_xs(xs)
+
+    def set_xs(self, val):
+        self.xs = val
+
+    def set_keff(self, val):
+        self.keff = val
+
+    def set_width(self, val):
+        self.width = val
+
+    def set_flux(self, kg, val):
+        self.flux[kg] = val
+    
+    def get_flux(self, kg):
+        return self.flux[kg]
+
+    def set_jin(self, kg, dir, val):
+        self.jin[kg, dir] = val
+
+    def get_jin(self, kg, dir):
+        return self.jin[kg, dir]
+    
+    def get_jout(self, kg, dir):
+        return self.jout[kg, dir]
+
+    def get_xs(self):
+        return self.xs
+
+    def get_width(self):
+        return self.width
+
+    def get_fis_src(self, kg):
+        return self.fis_src[kg]
+
+    def calc_fis_src(self, kg):
+        # fission source        
+        s_fis = 0.0
+        for kkg in range(self.xs.ng()):
+            s_fis += self.xs.xi(kg) * self.xs.nusigf(kkg)*self.flux[kkg]
+        self.fis_src[kg] = s_fis
+
+    def calc_scat_src(self, kg):
+        # scattering source
+        s_scat = 0.0
+        for kkg in range(self.xs.ng()):
+            if kg != kkg:
+                s_scat += self.xs.sigs(kkg, kg) * self.flux[kkg]
+        self.scat_src[kg] = s_scat
+
+    def normalize_fis_src(self, kg, factor):
+        self.fis_src[kg] *= factor
+
+    def calc(self, kg):
+        #flux by Eq(28)
+        coef1 = 2.0*self.xs.dif(kg) / self.width
+        coef2 = 2.0*coef1
+        coef3 = 1.0 + coef2
+        f_nume = coef1 * 4.0 * (self.jin[kg, XP] + self.jin[kg, XM]) + coef3 * \
+                (self.fis_src[kg]  / self.keff + self.scat_src[kg]) * self.width
+        f_deno = coef2 + coef3*self.xs.sigr(kg)*self.width
+        self.flux[kg] = f_nume / f_deno
+
+        #net current by Eq(29)
+        jnet_XM  = -coef1 * (4.0*self.jin[kg, XM] - self.flux[kg]) / coef3
+        jnet_XP = -coef1 * (4.0*self.jin[kg, XP] - self.flux[kg]) / coef3
+
+        #out-goinnt by Eq(30)
+        self.jout[kg, XM] = jnet_XM + self.jin[kg, XM]
+        self.jout[kg, XP] = jnet_XP + self.jin[kg, XP]
+
+
+    def debug(self):
+        print("-"*3 + " Node " + "-"*40)
+        print( "kg\tjin_XM\tjin_XP\tjout_XM\tjout_XP")
+        for kg in range(self.xs.ng()):
+            print(kg, self.jin[kg, XM], self.jin[kg, XP], self.jout[kg, XM], self.jout[kg, XP], sep='\t')
+
+        print("  flux   \t", self.flux)
+        print("  fis_src\t", self.fis_src)
+        print("  scat_src\t", self.scat_src)
+        print("  keff   \t", self.keff)
+        
+        self.xs.debug()
+        print("-"*50)
+```
+
+### Containerクラスのテストコード
+
+```Python
+import unittest
+
+import sys
+sys.path.append('../lib')
+import math
+
+from config import *
+from cross_section import CrossSection
+from node import Node
+from container import Container
+
+class ContainerTest(unittest.TestCase):
+
+    def test_container(self):
+
+        xs = CrossSection()
+        xs.set([[1.58, 0.02, 0.0, 1.0],[0.271, 0.0930, 0.168, 0.0]])
+        xs.set_smat( [[0.0, 0.0178], [0.0, 0.0]])
+        xs.calc_sigr()
+
+        delta = 1.0
+        albedo = -1.0
+        geom = [{'xs':xs, 'width':100}]
+
+        cont = Container(geom, delta, albedo)
+        #cont.debug()
+        
+        keff = 1.0
+        keff_old = 1.0
+        total_fis_src_old = 1.0
+        conv = 1.0e-7
+        
+        for idx_outer in range(100):
+
+            total_fis_src = cont.get_total_fis_src()
+            norm_factor = 1.0 / (total_fis_src/keff)
+            cont.normalize_fis_src(norm_factor)
+
+            for kg in range(2):
+                cont.calc_scat_src(kg)
+
+                for idx_inner in range(4):
+                    for color in range(2):
+                        cont.calc(kg, color)
+            
+                cont.calc_fis_src(kg)
+
+            total_fis_src = cont.get_total_fis_src()
+            
+            keff = total_fis_src / (total_fis_src_old/keff_old)
+            diff = abs((keff - keff_old)/keff)
+            #print( keff, diff)
+            if(diff < conv):
+                break
+            keff_old = keff
+            total_fis_src_old = total_fis_src
+
+            cont.set_keff(keff)
+
+        b2 = (math.pi / geom[0]['width'])**2
+        kana_nume = (xs.sigr(1) + xs.dif(1)*b2)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
+        kana_deno = (xs.dif(0)*b2 + xs.sigr(0) ) * (xs.dif(1)*b2 + xs.sigr(1))
+        kana = kana_nume / kana_deno
+        print("kana=", kana)
+
+        self.assertAlmostEqual(keff, kana, places=4)
+
+
+        flux = cont.get_flux_dist(0)  # first energy
+        self.assertEqual(len(flux), 2)  # x, y
+        self.assertEqual(len(flux[0]), int(geom[0]['width']/delta))
+        self.assertEqual(flux[0][0], delta/2.0)
+        self.assertEqual(flux[0][-1], geom[0]['width']-delta/2.0)
+        self.assertEqual(len(flux[1]), int(geom[0]['width']/delta))
+
+
+if __name__ == '__main__':
+    unittest.main()
+```
+
+### Containerクラス本体の
+
+
+
 
 
 ## 加速法の実装
