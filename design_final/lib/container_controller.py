@@ -9,7 +9,7 @@ class ContainerController:
         self.keff_old = 1.0
         self.total_fis_src_old = 1.0
         self.conv_criterion = 1.0E-7
-        self.max_outer_iterations = 100000
+        self.max_outer_iterations = 500
         self.inner_iterations = 4
         self.converged = False
 

@@ -3,7 +3,9 @@ from container_controller import ContainerController
 
 
 class CalculationManager:
-
+    """
+        計算の全体制御
+    """
     def __init__(self, param):
         geom = param['geometry']
         delta = param['mesh_width']

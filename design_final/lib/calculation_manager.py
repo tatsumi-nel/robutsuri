@@ -16,7 +16,7 @@ class CalculationManager:
         self.controller = ContainerController(container)
 
     def run(self):
-        self.controller.calc()
+        return self.controller.calc()
 
     def get_keff(self):
         return self.controller.get_keff()
