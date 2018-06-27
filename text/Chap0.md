@@ -66,14 +66,17 @@ del {
 }
 </style>
 
+<div align="center" style="font-size:28pt; font-weight:bold; margin-bottom:1em" >Robutsuri Programming DOJO</div>
+
+<div style="text-align:right; margin-bottom:2em">
+㈱原子力エンジニアリング<br />巽　雅洋
+</div>
+
 
 # プロローグ
-今回、なぜプログラミングがテーマの一つになったのか･･･。そして、何故、講師を引き受けることになってしまったのか･･･。
-
-ま、受講者にとってはどうでも良いことかも知れないが、それなりのストーリーがそこにはある（かもしれない）ので、一応まとめておきたい。
-
-
-時は2017年秋。北海道大学工学部で日本原子力学会秋の大会が開催され、筆者も参加していた。現地委員をされていた某C先生は忙しそうにしていたが、少し時間がとれそうということで、とある教室にて雑談をしていたところ、急転直下、つぎのようなネタフリがあった。
+今回、なぜプログラミングがテーマの一つになったのか･･･。そして、何故、講師として登壇することになってしまったのか･･･。ま、読者にとってはどうでも良いことかも知れないが、一応まとめておきたい。
+<br/>
+時は2017年秋。北海道大学工学部で日本原子力学会秋の大会が開催され、筆者も参加していた。現地委員をされていた某CB先生は忙しそうにしていたが、少し時間がとれそうということで、とある教室にて雑談をしていた。そんな時、困った<font size=1>ような</font>顔をして、つぎのようなネタフリがあった。
 
 
 <div class="balloon1" style="margin-top:2em; margin-bottom:4em;">
@@ -95,7 +98,7 @@ del {
 
 そんなこともあり、以前からもやもやと頭の中にあった「プログラミングは最強スキル。皆が持てばもっと生産性が上がるはず！」という気持ちから、先の発言が出てしまったのだ。
 
-しかしながら、C先生はそのその瞬間を逃さず、目をキラリと光らせた<font size=1>ような気がした</font>。
+しかしながら、CB先生はそのその瞬間を逃さず、目をキラリと光らせた<font size=1>ような気がした</font>。
 
 <div class="balloon1" style="margin-top:2em; margin-bottom:2em;">
   <div class="icon"><img src="https://3.bp.blogspot.com/-p_KqddGXvs4/WBsAzQLBubI/AAAAAAAA_V8/ysrybUP7twsg1CHN_fqlNrPu3lvvbei_wCLcB/s800/pose_kiri_man.png" width=80></div>
@@ -110,10 +113,13 @@ del {
 </div>
 
 
-C先生の持ち前の<span style="text-decoration:line-through;color:red;"><span style="color:black;">強引さ</span></span>リーダーシップで、あっという間に<span style="text-decoration:line-through;color:red;"><span style="color:black;">丸め込まれた</span></span>話がまとまったのであった。めでたしめでたし。
+CB先生の持ち前の<span style="text-decoration:line-through;color:red;"><span style="color:black;">強引さ</span></span>リーダーシップで、あっという間に<span style="text-decoration:line-through;color:red;"><span style="color:black;">丸め込まれた</span></span>話がまとまったのであった。めでたしめでたし。
 
 <p style="margin-top:3em">
 ･･･と、<font size=1>一部脚色はあるが</font>このような経緯で、過去の炉物理夏期セミナーで初めての試みである<font size=1>と思われる</font>、プログラミング演習をすることになった次第である。今から思えば、前回の講義資料の最終頁に、こうなることがあらかじめ織り込まれていたのかもしれない･･･。
+
+
+信じるか信じないかは、あなた次第です！
 
 ## 期待される効果・効能
 本 DOJO を修了した暁には、以下のような明るい未来があなたを待っている<font size=1>だろう</font>。
@@ -159,3 +165,5 @@ C先生の持ち前の<span style="text-decoration:line-through;color:red;"><spa
 筆者の中に暗黙知として蓄積されているノウハウをどこまで整理してお伝えできるか、ある意味筆者自身のチャレンジなのでもある。
 
 というわけで、前置きが長かったが、次章からいよいよ本題に入っていくことにしよう。
+
+<div style="page-break-before:always"></div>
