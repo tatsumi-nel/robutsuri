@@ -909,7 +909,7 @@ class NodeTest(unittest.TestCase):
 2. 以下の式を用いてメッシュ <img src="https://latex.codecogs.com/gif.latex?\inline&space;i" /> における平均中性子束 <img src="https://latex.codecogs.com/gif.latex?\inline&space;\phi_i" />  を計算する。
 
 <div align="center" style="margin-bottom:1em">
-<img src="https://latex.codecogs.com/gif.latex?\{\frac{4 D}{\Delta x} + (1 + \frac{4 D}{\Delta x}) \Sigma_{a,i} \} \phi_i = \frac{2D}{\Delta x}(4 J^-_{i+1/2} + 4 J^-_{i-1/2})+(1+\frac{4D}{\Delta x})\Delta S_i" width=80%/>
+<img src="https://latex.codecogs.com/gif.latex?\{\frac{4 D}{\Delta x} + (1 + \frac{4 D}{\Delta x}) \Sigma_{a,i} \} \phi_i = \frac{2D}{\Delta x}(4 J^-_{i+1/2} + 4 J^-_{i-1/2})+(1+\frac{4D}{\Delta x})\Delta S_i"/>
 </div>
 
 3. 流入中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J^-_{i\pm 1/2}" /> とノード平均中止子束 <img src="https://latex.codecogs.com/gif.latex?\inline&space;\phi_i" /> から、境界における中性子流 <img src="https://latex.codecogs.com/gif.latex?\inline&space;J_{i\pm 1/2}" /> を以下の式で計算する。
