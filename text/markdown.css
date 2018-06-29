@@ -1,0 +1,39 @@
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 10pt;
+	padding: 0 12px;
+	line-height: 1.5em;
+    word-wrap: break-word;
+    counter-reset: chapter;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 7pt;
+	line-height: 12px;
+}
+
+
+h1 {
+    counter-reset: sub-chapter;
+    margin-top: 2em;
+}
+h2 {
+    counter-reset: section;
+    margin-top: 1em;
+}
+h3 {
+    margin-top: 0.5em;
+}
+h1::before {
+    counter-increment: chapter;
+    content: counter(chapter) ". ";
+}
+h2::before {
+    counter-increment: sub-chapter;
+    content: counter(chapter) "." counter(sub-chapter) ". ";
+}
+h3::before {
+    counter-increment: section;
+    content: counter(chapter) "." counter(sub-chapter) "." counter(section) ". ";
+}
