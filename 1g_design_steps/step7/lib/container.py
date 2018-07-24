@@ -22,7 +22,7 @@ class Container:
         self.delta = delta
         self.albedo = albedo
 
-    def calc(self, color=None):
+    def calc(self, color):
         for ix in range(color, len(self.nodes), 2):
             if(ix==0):
                 jin_xm = self.albedo * self.nodes[ix].get_jout(XM)

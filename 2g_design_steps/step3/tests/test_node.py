@@ -75,7 +75,6 @@ class NodeTest(unittest.TestCase):
 
         print("keff=", keff)
 
-        # analytic solution by Eq.(67) on the page 114 where the buckling is zero.
         kana_nume = xs.sigr(1)*xs.nusigf(0) + xs.sigs(0,1)*xs.nusigf(1)
         kana_deno = xs.sigr(0) * xs.sigr(1)
         kana = kana_nume / kana_deno
