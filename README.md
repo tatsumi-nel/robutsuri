@@ -82,3 +82,16 @@ Python 参考書については、あれば手元に置いておきたい。
 では、諸君の検討を祈る。
 
 当日、DOJO で会おう。
+
+
+## Youtube Live の録画映像
+当日、Youtube Live による配信を行いました。その際の録画映像を下記URLにて視聴することができます。
+
+ - https://www.youtube.com/watch?v=HC59MYEKogc
+ 
+ - https://www.youtube.com/watch?v=OJnqGwNTAsI
+ 
+ - 当日のプレゼンテーションファイルはリポジトリ中にありますので適宜参照してください。
+
+
+
